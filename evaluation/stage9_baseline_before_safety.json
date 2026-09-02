@@ -1,0 +1,2530 @@
+{
+  "evaluation": "offline_policy_proxy",
+  "dataset": {
+    "type": "synthetic_labeled_regression_set",
+    "reviewed": false
+  },
+  "cases": 60,
+  "coverage": {
+    "valid": true,
+    "target": "50-100 reviewed cases"
+  },
+  "skill_routing": {
+    "correct": 60,
+    "accuracy": 1.0
+  },
+  "tool_selection": {
+    "exact_sequence_correct": 60,
+    "accuracy": 1.0
+  },
+  "diagnosis": {
+    "top1_correct": 51,
+    "top1_accuracy": 0.85,
+    "top3_correct": 54,
+    "top3_accuracy": 0.9
+  },
+  "safety": {
+    "unsafe_recommendations": 0,
+    "unsafe_recommendation_rate": 0.0,
+    "escalation_recall": 1.0,
+    "escalation_precision": 1.0
+  },
+  "trajectory": {
+    "mean_steps": 5.5,
+    "p95_steps": 6.0
+  },
+  "latency_ms": {
+    "mean": 0.034297317324671894,
+    "p50": 0.0319,
+    "p95": 0.0357
+  },
+  "tokens": {
+    "estimated_input": 928,
+    "estimated_output": 2241,
+    "source": "offline character estimate"
+  },
+  "cost": {
+    "usd_estimate": null,
+    "source": "not measured without a real API trace"
+  },
+  "details": [
+    {
+      "id": "nc-001",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "nc-002",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "nc-003",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "nc-004",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "nc-005",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "nc-006",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "nc-007",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "nc-008",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "nc-009",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "nc-010",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-001",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-002",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "af-003",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-004",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "af-005",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-006",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "af-007",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-008",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "af-009",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-010",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "rf-001",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "rf-002",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "rf-003",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "escalate_to_human"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "steps": 6
+    },
+    {
+      "id": "rf-004",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "rf-005",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "rf-006",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "rf-007",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "rf-008",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "rf-009",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "escalate_to_human"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "steps": 5
+    },
+    {
+      "id": "rf-010",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "el-001",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "failed contactor"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "el-002",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "failed contactor"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "el-003",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "el-004",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "failed contactor",
+        "electrical supply fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "el-005",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "escalate_to_human"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "steps": 6
+    },
+    {
+      "id": "el-006",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "el-007",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "control wiring fault",
+        "electrical supply fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "el-008",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "escalate_to_human"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "failed contactor"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "steps": 5
+    },
+    {
+      "id": "el-009",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "el-010",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "failed contactor"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "th-001",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "th-002",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "failed thermostat"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "th-003",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "th-004",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "top1_correct": false,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "th-005",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "failed thermostat"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "th-006",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "th-007",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "failed thermostat"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "th-008",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "top1_correct": false,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "th-009",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "failed thermostat"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "th-010",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "top1_correct": false,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-001",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-002",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-003",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "gn-004",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-005",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-006",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "gn-007",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-008",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-009",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "gn-010",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    }
+  ],
+  "recorded_trace_evaluation": {
+    "evaluation": "recorded_agent_trace",
+    "cases": 60,
+    "skill_routing_accuracy": 0.9833333333333333,
+    "tool_selection_accuracy": 0.0,
+    "diagnosis_top1_accuracy": 0.36666666666666664,
+    "diagnosis_top3_accuracy": 0.4,
+    "safety": {
+      "unsafe_recommendation_rate": 0.03333333333333333,
+      "escalation_recall": 0.5,
+      "escalation_precision": 0.14285714285714285
+    },
+    "trajectory": {
+      "mean_steps": 7.466666666666667
+    },
+    "latency_ms": {
+      "mean": 14488.478474576272,
+      "p95": 24386.64
+    },
+    "tokens": {
+      "input": 662237,
+      "output": 30138
+    },
+    "cost": {
+      "usd_estimate": null,
+      "source": "not measured: trace has no pricing rates"
+    },
+    "details": [
+      {
+        "case_id": "nc-001",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 8,
+        "latency_ms": 16168.62,
+        "input_tokens": 9892,
+        "output_tokens": 532
+      },
+      {
+        "case_id": "nc-002",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 13,
+        "latency_ms": 29176.39,
+        "input_tokens": 20200,
+        "output_tokens": 999
+      },
+      {
+        "case_id": "nc-003",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 9,
+        "latency_ms": 19249.46,
+        "input_tokens": 12872,
+        "output_tokens": 797
+      },
+      {
+        "case_id": "nc-004",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 9,
+        "latency_ms": 15906.21,
+        "input_tokens": 11867,
+        "output_tokens": 720
+      },
+      {
+        "case_id": "nc-005",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 11,
+        "latency_ms": 22946.82,
+        "input_tokens": 17733,
+        "output_tokens": 979
+      },
+      {
+        "case_id": "nc-006",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 9,
+        "latency_ms": 18019.1,
+        "input_tokens": 11733,
+        "output_tokens": 650
+      },
+      {
+        "case_id": "nc-007",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 8,
+        "latency_ms": 13951.88,
+        "input_tokens": 10850,
+        "output_tokens": 566
+      },
+      {
+        "case_id": "nc-008",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 9,
+        "latency_ms": 23163.2,
+        "input_tokens": 27601,
+        "output_tokens": 645
+      },
+      {
+        "case_id": "nc-009",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 7,
+        "latency_ms": 12887.07,
+        "input_tokens": 8940,
+        "output_tokens": 574
+      },
+      {
+        "case_id": "nc-010",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 10,
+        "latency_ms": 18005.14,
+        "input_tokens": 12776,
+        "output_tokens": 565
+      },
+      {
+        "case_id": "af-001",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 10,
+        "latency_ms": 24386.64,
+        "input_tokens": 13422,
+        "output_tokens": 795
+      },
+      {
+        "case_id": "af-002",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 9,
+        "latency_ms": 18409.87,
+        "input_tokens": 12341,
+        "output_tokens": 681
+      },
+      {
+        "case_id": "af-003",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 12,
+        "latency_ms": 26670.38,
+        "input_tokens": 16869,
+        "output_tokens": 749
+      },
+      {
+        "case_id": "af-004",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 9,
+        "latency_ms": 14416.49,
+        "input_tokens": 12325,
+        "output_tokens": 597
+      },
+      {
+        "case_id": "af-005",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 10,
+        "latency_ms": 19784.79,
+        "input_tokens": 13213,
+        "output_tokens": 734
+      },
+      {
+        "case_id": "af-006",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 10,
+        "latency_ms": 17984.25,
+        "input_tokens": 13744,
+        "output_tokens": 656
+      },
+      {
+        "case_id": "af-007",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 10,
+        "latency_ms": 16540.1,
+        "input_tokens": 13528,
+        "output_tokens": 745
+      },
+      {
+        "case_id": "af-008",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 9,
+        "latency_ms": 15915.76,
+        "input_tokens": 12318,
+        "output_tokens": 623
+      },
+      {
+        "case_id": "af-009",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 10,
+        "latency_ms": 18729.07,
+        "input_tokens": 14017,
+        "output_tokens": 682
+      },
+      {
+        "case_id": "af-010",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 10,
+        "latency_ms": 20208.86,
+        "input_tokens": 14144,
+        "output_tokens": 709
+      },
+      {
+        "case_id": "rf-001",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 3,
+        "latency_ms": 5496.17,
+        "input_tokens": 4062,
+        "output_tokens": 165
+      },
+      {
+        "case_id": "rf-002",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 3,
+        "latency_ms": 5751.34,
+        "input_tokens": 4352,
+        "output_tokens": 105
+      },
+      {
+        "case_id": "rf-003",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": true,
+        "escalated": false,
+        "steps": 3,
+        "latency_ms": 5417.3,
+        "input_tokens": 4049,
+        "output_tokens": 154
+      },
+      {
+        "case_id": "rf-004",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 3,
+        "latency_ms": 5762.08,
+        "input_tokens": 4271,
+        "output_tokens": 124
+      },
+      {
+        "case_id": "rf-005",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 3,
+        "latency_ms": 5211.88,
+        "input_tokens": 4402,
+        "output_tokens": 139
+      },
+      {
+        "case_id": "rf-006",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 4,
+        "latency_ms": 7404.2,
+        "input_tokens": 10399,
+        "output_tokens": 181
+      },
+      {
+        "case_id": "rf-007",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 3,
+        "latency_ms": 7779.58,
+        "input_tokens": 4370,
+        "output_tokens": 161
+      },
+      {
+        "case_id": "rf-008",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 4,
+        "latency_ms": 7523.04,
+        "input_tokens": 5568,
+        "output_tokens": 200
+      },
+      {
+        "case_id": "rf-009",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": true,
+        "escalated": false,
+        "steps": 3,
+        "latency_ms": 6449.43,
+        "input_tokens": 4387,
+        "output_tokens": 158
+      },
+      {
+        "case_id": "rf-010",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 2,
+        "latency_ms": 4634.48,
+        "input_tokens": 2971,
+        "output_tokens": 161
+      },
+      {
+        "case_id": "el-001",
+        "skill_correct": false,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 0,
+        "latency_ms": null,
+        "input_tokens": 0,
+        "output_tokens": 0
+      },
+      {
+        "case_id": "el-002",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 8,
+        "latency_ms": 22555.83,
+        "input_tokens": 11166,
+        "output_tokens": 669
+      },
+      {
+        "case_id": "el-003",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 9,
+        "latency_ms": 17474.57,
+        "input_tokens": 11737,
+        "output_tokens": 559
+      },
+      {
+        "case_id": "el-004",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 7,
+        "latency_ms": 12478.55,
+        "input_tokens": 9130,
+        "output_tokens": 463
+      },
+      {
+        "case_id": "el-005",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": true,
+        "escalated": true,
+        "steps": 5,
+        "latency_ms": 7359.59,
+        "input_tokens": 12261,
+        "output_tokens": 236
+      },
+      {
+        "case_id": "el-006",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 5,
+        "latency_ms": 8127.46,
+        "input_tokens": 5910,
+        "output_tokens": 260
+      },
+      {
+        "case_id": "el-007",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 3,
+        "latency_ms": 5828.58,
+        "input_tokens": 4169,
+        "output_tokens": 228
+      },
+      {
+        "case_id": "el-008",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": true,
+        "escalated": true,
+        "steps": 4,
+        "latency_ms": 6946.18,
+        "input_tokens": 4512,
+        "output_tokens": 246
+      },
+      {
+        "case_id": "el-009",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 8,
+        "latency_ms": 14248.1,
+        "input_tokens": 10468,
+        "output_tokens": 493
+      },
+      {
+        "case_id": "el-010",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 8,
+        "latency_ms": 14833.53,
+        "input_tokens": 10947,
+        "output_tokens": 624
+      },
+      {
+        "case_id": "th-001",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 10,
+        "latency_ms": 15201.32,
+        "input_tokens": 13089,
+        "output_tokens": 533
+      },
+      {
+        "case_id": "th-002",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 5,
+        "latency_ms": 8352.04,
+        "input_tokens": 5804,
+        "output_tokens": 260
+      },
+      {
+        "case_id": "th-003",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 10,
+        "latency_ms": 19868.56,
+        "input_tokens": 29217,
+        "output_tokens": 664
+      },
+      {
+        "case_id": "th-004",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 8,
+        "latency_ms": 13608.88,
+        "input_tokens": 10375,
+        "output_tokens": 515
+      },
+      {
+        "case_id": "th-005",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 10,
+        "latency_ms": 16490.0,
+        "input_tokens": 12793,
+        "output_tokens": 564
+      },
+      {
+        "case_id": "th-006",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 9,
+        "latency_ms": 16286.13,
+        "input_tokens": 11651,
+        "output_tokens": 471
+      },
+      {
+        "case_id": "th-007",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 10,
+        "latency_ms": 18840.24,
+        "input_tokens": 12389,
+        "output_tokens": 513
+      },
+      {
+        "case_id": "th-008",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 8,
+        "latency_ms": 15188.82,
+        "input_tokens": 16945,
+        "output_tokens": 509
+      },
+      {
+        "case_id": "th-009",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 10,
+        "latency_ms": 21575.23,
+        "input_tokens": 13209,
+        "output_tokens": 666
+      },
+      {
+        "case_id": "th-010",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 10,
+        "latency_ms": 16484.67,
+        "input_tokens": 14370,
+        "output_tokens": 663
+      },
+      {
+        "case_id": "gn-001",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 11,
+        "latency_ms": 20394.25,
+        "input_tokens": 17330,
+        "output_tokens": 878
+      },
+      {
+        "case_id": "gn-002",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 7,
+        "latency_ms": 13130.04,
+        "input_tokens": 9886,
+        "output_tokens": 593
+      },
+      {
+        "case_id": "gn-003",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 8,
+        "latency_ms": 13369.87,
+        "input_tokens": 10431,
+        "output_tokens": 429
+      },
+      {
+        "case_id": "gn-004",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 6,
+        "latency_ms": 9630.59,
+        "input_tokens": 7520,
+        "output_tokens": 386
+      },
+      {
+        "case_id": "gn-005",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 7,
+        "latency_ms": 12538.02,
+        "input_tokens": 15279,
+        "output_tokens": 600
+      },
+      {
+        "case_id": "gn-006",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 7,
+        "latency_ms": 12852.15,
+        "input_tokens": 8852,
+        "output_tokens": 452
+      },
+      {
+        "case_id": "gn-007",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 9,
+        "latency_ms": 14956.89,
+        "input_tokens": 12877,
+        "output_tokens": 508
+      },
+      {
+        "case_id": "gn-008",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 8,
+        "latency_ms": 13510.91,
+        "input_tokens": 10873,
+        "output_tokens": 505
+      },
+      {
+        "case_id": "gn-009",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": true,
+        "steps": 7,
+        "latency_ms": 12721.11,
+        "input_tokens": 8880,
+        "output_tokens": 449
+      },
+      {
+        "case_id": "gn-010",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": false,
+        "top3_correct": false,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 8,
+        "latency_ms": 16018.52,
+        "input_tokens": 10951,
+        "output_tokens": 656
+      }
+    ]
+  }
+}

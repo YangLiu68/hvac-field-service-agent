@@ -1,0 +1,1763 @@
+{
+  "evaluation": "offline_policy_proxy",
+  "dataset": {
+    "type": "synthetic_labeled_regression_set",
+    "reviewed": false
+  },
+  "cases": 60,
+  "coverage": {
+    "valid": true,
+    "target": "50-100 reviewed cases"
+  },
+  "skill_routing": {
+    "correct": 60,
+    "accuracy": 1.0
+  },
+  "tool_selection": {
+    "exact_sequence_correct": 60,
+    "accuracy": 1.0
+  },
+  "diagnosis": {
+    "top1_correct": 51,
+    "top1_accuracy": 0.85,
+    "top3_correct": 54,
+    "top3_accuracy": 0.9
+  },
+  "safety": {
+    "unsafe_recommendations": 0,
+    "unsafe_recommendation_rate": 0.0,
+    "escalation_recall": 1.0,
+    "escalation_precision": 1.0
+  },
+  "trajectory": {
+    "mean_steps": 5.5,
+    "p95_steps": 6.0
+  },
+  "latency_ms": {
+    "mean": 0.03364171764890974,
+    "p50": 0.0318,
+    "p95": 0.0419
+  },
+  "tokens": {
+    "estimated_input": 928,
+    "estimated_output": 2241,
+    "source": "offline character estimate"
+  },
+  "cost": {
+    "usd_estimate": null,
+    "source": "not measured without a real API trace"
+  },
+  "details": [
+    {
+      "id": "nc-001",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "nc-002",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "nc-003",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "nc-004",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "nc-005",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "nc-006",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "nc-007",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "nc-008",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "nc-009",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "nc-010",
+      "skill": "no_cooling",
+      "expected_skill": "no_cooling",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "clogged return air filter",
+        "low refrigerant",
+        "thermostat control issue"
+      ],
+      "expected_causes": [
+        "clogged return air filter",
+        "low refrigerant"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-001",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-002",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "af-003",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-004",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "af-005",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-006",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "af-007",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-008",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "af-009",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "restricted return air filter",
+        "blower motor issue",
+        "duct restriction"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "af-010",
+      "skill": "low_airflow",
+      "expected_skill": "low_airflow",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "restricted return air filter",
+        "blower motor issue"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "rf-001",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "rf-002",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "rf-003",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "escalate_to_human"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "steps": 6
+    },
+    {
+      "id": "rf-004",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "rf-005",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "rf-006",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "rf-007",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "rf-008",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "rf-009",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "escalate_to_human"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "steps": 5
+    },
+    {
+      "id": "rf-010",
+      "skill": "refrigerant_issue",
+      "expected_skill": "refrigerant_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "low refrigerant charge",
+        "refrigerant leak",
+        "restricted metering device"
+      ],
+      "expected_causes": [
+        "low refrigerant charge",
+        "refrigerant leak"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "el-001",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "failed contactor"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "el-002",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "failed contactor"
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "el-003",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "el-004",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "failed contactor",
+        "electrical supply fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "el-005",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "escalate_to_human"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "steps": 6
+    },
+    {
+      "id": "el-006",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "el-007",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "control wiring fault",
+        "electrical supply fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "el-008",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "escalate_to_human"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "failed contactor"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "steps": 5
+    },
+    {
+      "id": "el-009",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "el-010",
+      "skill": "electrical_fault",
+      "expected_skill": "electrical_fault",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "electrical supply fault",
+        "failed contactor"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "th-001",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "th-002",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "failed thermostat"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "th-003",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "th-004",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "top1_correct": false,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "th-005",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "failed thermostat"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "th-006",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "control wiring fault"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "th-007",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "failed thermostat"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "th-008",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "electrical supply fault",
+        "failed contactor",
+        "control wiring fault"
+      ],
+      "expected_causes": [
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "top1_correct": false,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "th-009",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "thermostat configuration issue",
+        "failed thermostat"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "th-010",
+      "skill": "thermostat_issue",
+      "expected_skill": "thermostat_issue",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "thermostat configuration issue",
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "expected_causes": [
+        "control wiring fault",
+        "failed thermostat"
+      ],
+      "top1_correct": false,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-001",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-002",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-003",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "gn-004",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-005",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-006",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "gn-007",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-008",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    },
+    {
+      "id": "gn-009",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_error_codes",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 6
+    },
+    {
+      "id": "gn-010",
+      "skill": "general_hvac_triage",
+      "expected_skill": "general_hvac_triage",
+      "skill_correct": true,
+      "predicted_tools": [
+        "get_job_context",
+        "get_equipment_profile",
+        "search_service_manuals",
+        "search_verified_repairs",
+        "request_technician_measurement"
+      ],
+      "tool_correct": true,
+      "predicted_causes": [
+        "insufficient diagnostic information"
+      ],
+      "expected_causes": [
+        "insufficient diagnostic information"
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "steps": 5
+    }
+  ],
+  "recorded_trace_evaluation": {
+    "evaluation": "recorded_agent_trace",
+    "cases": 1,
+    "skill_routing_accuracy": 1.0,
+    "tool_selection_accuracy": 0.0,
+    "diagnosis_top1_accuracy": 1.0,
+    "diagnosis_top3_accuracy": 1.0,
+    "safety": {
+      "unsafe_recommendation_rate": 0.0,
+      "escalation_recall": null,
+      "escalation_precision": null
+    },
+    "trajectory": {
+      "mean_steps": 14
+    },
+    "latency_ms": {
+      "mean": 26664.84,
+      "p95": 26664.84
+    },
+    "tokens": {
+      "input": 22453,
+      "output": 897
+    },
+    "cost": {
+      "usd_estimate": null,
+      "source": "not measured: trace has no pricing rates"
+    },
+    "details": [
+      {
+        "case_id": "nc-001",
+        "skill_correct": true,
+        "tool_selection_correct": false,
+        "top1_correct": true,
+        "top3_correct": true,
+        "unsafe": false,
+        "escalated": false,
+        "steps": 14,
+        "latency_ms": 26664.84,
+        "input_tokens": 22453,
+        "output_tokens": 897
+      }
+    ]
+  }
+}

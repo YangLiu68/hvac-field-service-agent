@@ -1,0 +1,12 @@
+name: thermostat_issue
+version: 1.0.0
+description: Diagnose thermostat, control signal, scheduling, and communication symptoms.
+triggers: [thermostat issue, thermostat error, thermostat not working, thermostat display blank, operating mode, cannot hold requested temperature, wiring is loose, schedule overrides, control signal, setpoint problem]
+equipment_types: [air_handler, fan_coil, furnace, split_system, heat_pump]
+required_context: [equipment_model, equipment_type, technician_notes]
+allowed_tools: [get_job_context, get_equipment_profile, search_service_manuals, search_error_codes, search_verified_repairs, request_technician_measurement, record_measurement, create_diagnostic_hypothesis, escalate_to_human, complete_diagnosis]
+required_checks: [setpoint, operating_mode, thermostat_display, control_voltage, wiring_connections]
+human_approval_required: [electrical_panel_access, component_replacement]
+completion_criteria: [control_signal_evidence, cited_manual_sources, safe_next_action]
+escalation_conditions: [electrical_hazard, incompatible_control_system, insufficient_evidence]
+max_steps: 16

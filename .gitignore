@@ -1,0 +1,33 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+!frontend/.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.cache/
+
+# Node / frontend build output
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
+
+# Local databases and backups
+*.db
+*.db-journal
+backups/
+
+# Third-party service manuals are not redistributed
+app/data/manuals/*.pdf
+
+# Personal and editor artifacts
+.DS_Store
+*.ses
+Interview.docx

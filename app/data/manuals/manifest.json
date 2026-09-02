@@ -1,0 +1,26 @@
+{
+  "document01.pdf": {
+    "title": "Fan Coil Service and Troubleshooting Manual",
+    "manufacturer": "Carrier",
+    "equipment_types": ["fan_coil", "air_handler"],
+    "model_families": ["FK4B", "FV4A", "FV4B", "FK4C", "FK4D", "40FK", "FE4A", "FF1A", "FF1V", "FF1C", "FD3A", "FG3A", "FA4", "FB4", "FC4", "FH4", "FX4"],
+    "refrigerants": [],
+    "document_version": "unknown"
+  },
+  "document02.pdf": {
+    "title": "Air Conditioner and Heat Pump Service Manual",
+    "manufacturer": "unknown",
+    "equipment_types": ["air_conditioner", "heat_pump"],
+    "model_families": [],
+    "refrigerants": ["R-410A"],
+    "document_version": "unknown"
+  },
+  "document03.pdf": {
+    "title": "Samsung VRF Outdoor Unit Service Manual",
+    "manufacturer": "Samsung",
+    "equipment_types": ["VRF", "outdoor_unit"],
+    "model_families": ["VPC", "VRC"],
+    "refrigerants": ["R-410A"],
+    "document_version": "unknown"
+  }
+}

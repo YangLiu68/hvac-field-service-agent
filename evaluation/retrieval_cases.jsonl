@@ -1,0 +1,5 @@
+{"query":"airflow is too low during cooling","expected_document":"document01.pdf"}
+{"query":"how to test the high pressure switch","expected_document":"document02.pdf"}
+{"query":"clean a restricted condensate drain and drain pan","expected_document":"document01.pdf"}
+{"query":"superheat charging procedure for an air conditioner","expected_document":"document02.pdf"}
+{"query":"ECM fan motor troubleshooting","expected_documents":["document01.pdf","document02.pdf"]}
