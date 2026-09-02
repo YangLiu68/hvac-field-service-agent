@@ -26,7 +26,7 @@ manufacturer/model/equipment metadata filter
 5. `POST /jobs/{job_id}/close` records the verified cause and repair outcome.
 6. `GET /jobs/{job_id}/timeline` returns an auditable lifecycle history.
 
-The legacy `POST /jobs/{job_id}/analyze` route is retained as a deprecated alias. Stage 4 now provides an audited Tool Registry and Executor; autonomous LLM orchestration and Skills remain intentionally reserved for later stages.
+The legacy `POST /jobs/{job_id}/analyze` route is retained as a deprecated alias. Diagnostic actions now run through the audited Tool Registry, Skill Registry, and Agent Orchestrator described below.
 
 ## Field-service intake and dispatch
 
@@ -87,11 +87,11 @@ curl -X POST http://127.0.0.1:8000/agent-runs/1/tools \
 curl http://127.0.0.1:8000/agent-runs/1/tool-calls
 ```
 
-This is not yet an autonomous Agent: the caller explicitly chooses each tool. Stage 5 adds the Skill Registry below; Stage 6 will add the LLM plan/act/observe loop.
+These endpoints also allow each tool to be exercised deterministically without invoking the LLM, making tool behavior independently testable.
 
 ## Stage 5 HVAC Skills
 
-Stage 5 adds a deterministic, versioned Skill Registry on top of the Stage 4 tools. Skills describe the diagnostic workflow and constrain the tools that a future orchestrator may use; they do not call the LLM themselves.
+The deterministic, versioned Skill Registry constrains which tools the Agent Orchestrator may use for each diagnostic workflow.
 
 Included definitions:
 
@@ -132,7 +132,7 @@ curl -X POST http://127.0.0.1:8000/agent-runs/1/start
 curl -X POST http://127.0.0.1:8000/agent-runs/1/continue
 ```
 
-The orchestrator requires the model to call `complete_diagnosis`; a plain text response without that tool call is treated as an incomplete/failed run rather than a completed repair recommendation. Repeated identical tool calls and runs that exceed their step budget are rejected and audited. Stage 7 will add explicit approval requests for high-risk operations; Stage 6 currently supports escalation and the existing Tool approval flag but does not authorize dangerous actions automatically.
+The orchestrator requires the model to call `complete_diagnosis`; a plain text response without that tool call is treated as an incomplete/failed run rather than a completed repair recommendation. Repeated identical tool calls and runs that exceed their step budget are rejected and audited. High-risk operations are handled by the explicit approval workflow below.
 
 ## Stage 7 Human approval and safety gates
 
@@ -283,7 +283,7 @@ Add a valid `OPENAI_API_KEY` to `.env`. Never commit `.env`.
 
 ## Run
 
-Run commands from the project root (`new pj`):
+Run commands from the repository root:
 
 ```bash
 source .venv/bin/activate
