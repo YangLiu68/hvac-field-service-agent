@@ -459,6 +459,7 @@ class UnifiedAssistantResponse(BaseModel):
     actions: list[str]
     selected_skill: str
     required_checks: list[str]
+    check_states: dict[str, str]
     retrieval_warnings: list[str]
 
 

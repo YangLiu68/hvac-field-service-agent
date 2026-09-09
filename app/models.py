@@ -178,6 +178,19 @@ class AssistantTurn(Base):
     conversation = relationship("AssistantConversation", back_populates="turns")
 
 
+class AssistantCheckState(Base):
+    """Structured progress for a skill check within one conversation."""
+
+    __tablename__ = "assistant_check_states"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("assistant_conversations.id"), nullable=False, index=True)
+    check_name = Column(String, nullable=False, index=True)
+    status = Column(String, nullable=False, default="pending", index=True)
+    evidence = Column(Text, nullable=True)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+
+
 class Estimate(Base):
     __tablename__ = "estimates"
 
