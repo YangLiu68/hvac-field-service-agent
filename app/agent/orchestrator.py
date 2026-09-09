@@ -123,6 +123,8 @@ class AgentOrchestrator:
         )
 
     def _response(self, run: AgentRun, input_value: Any):
+        if self._uses_openrouter():
+            return self._openrouter_tool_response(run, input_value)
         # OpenRouter uses stateless Responses turns.  Reattach the work-order
         # context whenever we are continuing from a tool observation.
         if self._uses_openrouter() and isinstance(input_value, list):
@@ -145,9 +147,78 @@ class AgentOrchestrator:
         if run.last_response_id and not self._uses_openrouter():
             kwargs["previous_response_id"] = run.last_response_id
         try:
-            return self._client().responses.create(**kwargs)
+            return self._client().responses.create(**kwargs, timeout=float(os.getenv("LLM_TIMEOUT_SECONDS", "45")))
         except Exception as exc:
             raise AgentOrchestrationError(f"LLM response failed: {exc}") from exc
+
+    def _openrouter_tool_response(self, run: AgentRun, input_value: Any) -> dict:
+        """Use OpenRouter's stable Chat Completions tools protocol.
+
+        OpenRouter's Responses compatibility endpoint is stateless and, with
+        ``openrouter/auto``, can take minutes to route every tool round.  Chat
+        Completions is the native compatibility path and is also what the
+        conversational assistant uses successfully.
+        """
+        if isinstance(input_value, str):
+            latest_input = input_value
+        elif isinstance(input_value, list):
+            latest_input = "\n".join(
+                str(item.get("content", item)) if isinstance(item, dict) else str(item)
+                for item in input_value
+            )
+        else:
+            latest_input = str(input_value)
+        messages = [
+            {"role": "system", "content": self._instructions(run)},
+            {"role": "user", "content": self._initial_input(run)},
+            {"role": "user", "content": latest_input},
+        ]
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": tool["name"],
+                    "description": tool["description"],
+                    "parameters": tool["parameters"],
+                },
+            }
+            for tool in self._tools_for(run)
+        ]
+        try:
+            completion = self._client().chat.completions.create(
+                model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
+                messages=messages,
+                tools=tools,
+                tool_choice="required",
+                parallel_tool_calls=False,
+                max_tokens=1200,
+                timeout=float(os.getenv("LLM_TIMEOUT_SECONDS", "45")),
+            )
+        except Exception as exc:
+            raise AgentOrchestrationError(f"LLM response failed: {exc}") from exc
+
+        choice = completion.choices[0] if completion.choices else None
+        message = choice.message if choice else None
+        tool_calls = getattr(message, "tool_calls", None) or []
+        output = [
+            {
+                "type": "function_call",
+                "call_id": call.id,
+                "name": call.function.name,
+                "arguments": call.function.arguments,
+            }
+            for call in tool_calls
+        ]
+        usage = getattr(completion, "usage", None)
+        return {
+            "id": getattr(completion, "id", None),
+            "usage": {
+                "input_tokens": getattr(usage, "prompt_tokens", 0) or 0,
+                "output_tokens": getattr(usage, "completion_tokens", 0) or 0,
+            },
+            "output": output,
+            "output_text": getattr(message, "content", None) or "",
+        }
 
     def run(self, db: Session, run_id: int, operator_message: str | None = None) -> dict:
         run = db.get(AgentRun, run_id)

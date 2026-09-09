@@ -34,6 +34,11 @@ from app.models import (
     Assignment,
     User,
     VerifiedOutcome,
+    KnowledgeEntry,
+    AssistantConversation,
+    AssistantTurn,
+    Estimate,
+    FollowUp,
     utcnow,
 )
 from app.schemas import (
@@ -83,6 +88,16 @@ from app.schemas import (
     TechnicianTaskRead,
     LoginRequest,
     LoginResponse,
+    KnowledgeEntryCreate,
+    KnowledgeEntryRead,
+    UnifiedAssistantRequest,
+    UnifiedAssistantResponse,
+    EstimateCreate,
+    EstimateRead,
+    FollowUpCreate,
+    FollowUpRead,
+    EstimateStatusUpdate,
+    OperationsDashboard,
 )
 from app.agent import ApprovalRequired, ToolExecutionError, ToolExecutor, build_default_registry
 from app.agent.skills import SkillRouter, build_default_skill_registry
@@ -90,6 +105,7 @@ from app.agent.orchestrator import AgentOrchestrator, AgentOrchestrationError
 from app.services.ai_service import AIServiceError, analyze_job, answer_field_question
 from app.services.rag_service import ManualIndexError, hybrid_search, ingest_manuals
 from app.services.case_memory import evaluation_metrics, evaluate_closed_outcome, index_verified_outcome, search_case_memories
+from app.services.unified_assistant import run_unified_turn
 
 
 initialize_database()
@@ -1151,6 +1167,138 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
         return result
     except AgentOrchestrationError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.post("/assistant/turns", response_model=UnifiedAssistantResponse)
+def unified_assistant_turn(payload: UnifiedAssistantRequest, db: Session = Depends(get_db)):
+    """Chat, create/update a work order, retrieve experience, and persist the complete turn."""
+    try:
+        return run_unified_turn(db, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Assistant turn failed: {exc}") from exc
+
+
+@app.get("/assistant/conversations/{conversation_id}")
+def get_assistant_conversation(conversation_id: int, db: Session = Depends(get_db)):
+    conversation = db.get(AssistantConversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    turns = db.query(AssistantTurn).filter(AssistantTurn.conversation_id == conversation_id).order_by(AssistantTurn.id).all()
+    return {"id": conversation.id, "job_id": conversation.job_id, "status": conversation.status,
+            "turns": [{"id": turn.id, "role": turn.role, "content": turn.content, "intent": turn.intent,
+                       "evidence": json.loads(turn.evidence or "[]"), "created_at": turn.created_at} for turn in turns]}
+
+
+@app.post("/knowledge", response_model=KnowledgeEntryRead, status_code=201)
+def create_knowledge_entry(payload: KnowledgeEntryCreate, db: Session = Depends(get_db)):
+    entry = KnowledgeEntry(**payload.model_dump())
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return entry
+
+
+@app.get("/knowledge", response_model=list[KnowledgeEntryRead])
+def list_knowledge_entries(category: str | None = None, db: Session = Depends(get_db)):
+    query = db.query(KnowledgeEntry).filter(KnowledgeEntry.active.is_(True)).order_by(KnowledgeEntry.updated_at.desc())
+    if category:
+        query = query.filter(KnowledgeEntry.category == category)
+    return query.all()
+
+
+@app.post("/estimates", response_model=EstimateRead, status_code=201)
+def create_estimate(payload: EstimateCreate, db: Session = Depends(get_db)):
+    if not db.get(Job, payload.job_id):
+        raise HTTPException(status_code=404, detail="Job not found")
+    estimate = Estimate(**payload.model_dump())
+    db.add(estimate)
+    db.add(JobEvent(job_id=payload.job_id, event_type="estimate_created", event_data=json.dumps({"amount": payload.amount})))
+    db.commit()
+    db.refresh(estimate)
+    return estimate
+
+
+@app.get("/estimates", response_model=list[EstimateRead])
+def list_estimates(status: str | None = None, db: Session = Depends(get_db)):
+    query = db.query(Estimate).order_by(Estimate.updated_at.desc())
+    return (query.filter(Estimate.status == status) if status else query).all()
+
+
+@app.patch("/estimates/{estimate_id}/status", response_model=EstimateRead)
+def update_estimate_status(estimate_id: int, payload: EstimateStatusUpdate, db: Session = Depends(get_db)):
+    estimate = db.get(Estimate, estimate_id)
+    if not estimate:
+        raise HTTPException(status_code=404, detail="Estimate not found")
+    estimate.status = payload.status
+    db.add(JobEvent(job_id=estimate.job_id, event_type="estimate_status_changed", event_data=json.dumps({"estimate_id": estimate.id, "status": payload.status})))
+    db.commit()
+    db.refresh(estimate)
+    return estimate
+
+
+@app.post("/follow-ups", response_model=FollowUpRead, status_code=201)
+def create_follow_up(payload: FollowUpCreate, db: Session = Depends(get_db)):
+    estimate = db.get(Estimate, payload.estimate_id)
+    if not estimate:
+        raise HTTPException(status_code=404, detail="Estimate not found")
+    content = payload.content or f"Hi {estimate.job.customer_name}, following up on estimate #{estimate.id} for ${estimate.amount:,.2f}. Reply if you have questions or would like to schedule service."
+    sensitive = any(term in content.lower() for term in ("discount", "financing", "guarantee", "refund"))
+    follow_up = FollowUp(estimate_id=estimate.id, channel=payload.channel, content=content,
+                         scheduled_at=payload.scheduled_at, requires_review=sensitive or estimate.amount >= 5000,
+                         status="review" if sensitive or estimate.amount >= 5000 else "queued")
+    db.add(follow_up)
+    db.commit()
+    db.refresh(follow_up)
+    return follow_up
+
+
+@app.get("/follow-ups", response_model=list[FollowUpRead])
+def list_follow_ups(status: str | None = None, db: Session = Depends(get_db)):
+    query = db.query(FollowUp).order_by(FollowUp.created_at.desc())
+    return (query.filter(FollowUp.status == status) if status else query).all()
+
+
+@app.post("/follow-ups/{follow_up_id}/approve", response_model=FollowUpRead)
+def approve_follow_up(follow_up_id: int, db: Session = Depends(get_db)):
+    follow_up = db.get(FollowUp, follow_up_id)
+    if not follow_up:
+        raise HTTPException(status_code=404, detail="Follow-up not found")
+    follow_up.requires_review = False
+    follow_up.status = "queued"
+    db.commit()
+    db.refresh(follow_up)
+    return follow_up
+
+
+@app.post("/follow-ups/{follow_up_id}/send", response_model=FollowUpRead)
+def send_follow_up(follow_up_id: int, db: Session = Depends(get_db)):
+    follow_up = db.get(FollowUp, follow_up_id)
+    if not follow_up:
+        raise HTTPException(status_code=404, detail="Follow-up not found")
+    if follow_up.requires_review:
+        raise HTTPException(status_code=409, detail="Follow-up requires approval")
+    # Delivery is intentionally simulated until an SMS/CRM provider is configured.
+    follow_up.status = "sent"
+    follow_up.sent_at = utcnow()
+    db.commit()
+    db.refresh(follow_up)
+    return follow_up
+
+
+@app.get("/operations/dashboard", response_model=OperationsDashboard)
+def operations_dashboard(db: Session = Depends(get_db)):
+    estimates = db.query(Estimate).all()
+    follow_ups = db.query(FollowUp).all()
+    automated = sum(1 for item in follow_ups if not item.requires_review)
+    return {"active_jobs": db.query(Job).filter(Job.status.in_(["open", "assigned", "in_progress"])).count(),
+            "open_estimates": sum(1 for item in estimates if item.status == "open"),
+            "open_pipeline_value": sum(item.amount for item in estimates if item.status == "open"),
+            "won_revenue": sum(item.amount for item in estimates if item.status == "won"),
+            "queued_follow_ups": sum(1 for item in follow_ups if item.status == "queued"),
+            "needs_review": sum(1 for item in follow_ups if item.requires_review),
+            "automation_rate": round(100 * automated / len(follow_ups), 1) if follow_ups else 100.0}
 
 
 @app.post("/manuals/ingest", response_model=ManualIngestResponse)

@@ -26,6 +26,21 @@ class FakeClient:
         self.responses = FakeResponses(outputs)
 
 
+class FakeChatCompletions:
+    def __init__(self, outputs):
+        self.outputs = outputs
+        self.calls = []
+
+    def create(self, **kwargs):
+        self.calls.append(kwargs)
+        return self.outputs.pop(0)
+
+
+class FakeOpenRouterClient:
+    def __init__(self, outputs):
+        self.chat = SimpleNamespace(completions=FakeChatCompletions(outputs))
+
+
 def _setup(tmp_path, notes="AC is not cooling"):
     engine = create_engine(f"sqlite:///{tmp_path / 'orchestrator.db'}", connect_args={"check_same_thread": False})
     Base.metadata.create_all(engine)
@@ -75,24 +90,26 @@ def test_openrouter_uses_stateless_tool_continuation(tmp_path, monkeypatch):
     engine, db, run_id = _setup(tmp_path)
     try:
         monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
-        client = FakeClient([
-            SimpleNamespace(id="resp_1", output=[SimpleNamespace(type="function_call", call_id="call_1", name="get_job_context", arguments="{}")], output_text=""),
-            SimpleNamespace(id="resp_2", output=[SimpleNamespace(type="function_call", call_id="call_2", name="complete_diagnosis", arguments=json.dumps({"likely_cause": "Restricted airflow", "confidence": 0.8, "recommendation": "Inspect filter and coil."}))], output_text=""),
+        client = FakeOpenRouterClient([
+            SimpleNamespace(id="chat_1", choices=[SimpleNamespace(message=SimpleNamespace(content=None, tool_calls=[SimpleNamespace(id="call_1", function=SimpleNamespace(name="get_job_context", arguments="{}"))]))], usage=SimpleNamespace(prompt_tokens=10, completion_tokens=4)),
+            SimpleNamespace(id="chat_2", choices=[SimpleNamespace(message=SimpleNamespace(content=None, tool_calls=[SimpleNamespace(id="call_2", function=SimpleNamespace(name="complete_diagnosis", arguments=json.dumps({"likely_cause": "Restricted airflow", "confidence": 0.8, "recommendation": "Inspect filter and coil."})))]))], usage=SimpleNamespace(prompt_tokens=12, completion_tokens=5)),
         ])
         result = _orchestrator(client).run(db, run_id)
         assert result["status"] == "completed"
-        assert "previous_response_id" not in client.responses.calls[1]
-        continuation = client.responses.calls[1]["input"]
-        assert continuation[1]["role"] == "user"
-        assert "Diagnostic tool result from get_job_context" in continuation[1]["content"]
+        assert len(client.chat.completions.calls) == 2
+        assert client.chat.completions.calls[0]["tool_choice"] == "required"
+        continuation = client.chat.completions.calls[1]["messages"][-1]["content"]
+        assert "Diagnostic tool result from get_job_context" in continuation
     finally:
         db.close()
         engine.dispose()
 
 
-def test_orchestrator_pauses_for_measurement_and_resumes(tmp_path):
+def test_orchestrator_pauses_for_measurement_and_resumes(tmp_path, monkeypatch):
     engine, db, run_id = _setup(tmp_path)
     try:
+        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+        monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
         client = FakeClient([
             SimpleNamespace(id="resp_1", output=[SimpleNamespace(type="function_call", call_id="call_1", name="request_technician_measurement", arguments=json.dumps({"measurement_type": "temperature_delta", "instructions": "Measure supply-return delta.", "unit": "F"}))], output_text=""),
             SimpleNamespace(id="resp_2", output=[SimpleNamespace(type="function_call", call_id="call_2", name="complete_diagnosis", arguments=json.dumps({"likely_cause": "Restricted airflow", "confidence": 0.8, "recommendation": "Inspect filter and coil."}))], output_text=""),
@@ -115,9 +132,11 @@ def test_orchestrator_pauses_for_measurement_and_resumes(tmp_path):
         engine.dispose()
 
 
-def test_orchestrator_replays_identical_read_only_tool_call(tmp_path):
+def test_orchestrator_replays_identical_read_only_tool_call(tmp_path, monkeypatch):
     engine, db, run_id = _setup(tmp_path)
     try:
+        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+        monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
         client = FakeClient([
             SimpleNamespace(id="resp_1", output=[SimpleNamespace(type="function_call", call_id="call_1", name="get_job_context", arguments="{}")], output_text=""),
             SimpleNamespace(id="resp_2", output=[SimpleNamespace(type="function_call", call_id="call_2", name="get_job_context", arguments="{}")], output_text=""),

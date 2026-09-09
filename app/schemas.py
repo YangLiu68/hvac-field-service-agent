@@ -401,6 +401,37 @@ class CaseMemorySearchRequest(BaseModel):
     limit: int = Field(default=5, ge=1, le=20)
 
 
+class KnowledgeEntryCreate(BaseModel):
+    title: str = Field(min_length=1)
+    category: str = "general"
+    keywords: str = ""
+    content: str = Field(min_length=1)
+    source: str | None = None
+
+
+class KnowledgeEntryRead(ORMModel):
+    id: int
+    title: str
+    category: str
+    keywords: str
+    content: str
+    source: str | None
+    active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class UnifiedAssistantRequest(BaseModel):
+    message: str = Field(min_length=1)
+    conversation_id: int | None = None
+    job_id: int | None = None
+    customer_name: str | None = None
+    manufacturer: str | None = None
+    equipment_model: str | None = None
+    equipment_type: str | None = None
+    channel: str = "web"
+
+
 class CaseMemorySearchResult(BaseModel):
     case_id: int
     job_id: int
@@ -415,6 +446,69 @@ class CaseMemorySearchResult(BaseModel):
     return_visit_required: bool
     score: float
     evidence_type: str
+
+
+class UnifiedAssistantResponse(BaseModel):
+    conversation_id: int
+    job_id: int
+    answer: str
+    intent: str
+    created_work_order: bool
+    similar_cases: list[CaseMemorySearchResult]
+    knowledge_entries: list[KnowledgeEntryRead]
+    actions: list[str]
+
+
+class EstimateCreate(BaseModel):
+    job_id: int
+    amount: float = Field(gt=0)
+    description: str = Field(min_length=1)
+    customer_phone: str | None = None
+    next_follow_up_at: datetime | None = None
+
+
+class EstimateRead(ORMModel):
+    id: int
+    job_id: int
+    amount: float
+    description: str
+    status: str
+    customer_phone: str | None
+    next_follow_up_at: datetime | None
+    created_at: datetime
+
+
+class FollowUpCreate(BaseModel):
+    estimate_id: int
+    content: str | None = None
+    channel: str = "sms"
+    scheduled_at: datetime | None = None
+
+
+class FollowUpRead(ORMModel):
+    id: int
+    estimate_id: int
+    channel: str
+    content: str
+    status: str
+    requires_review: bool
+    scheduled_at: datetime | None
+    sent_at: datetime | None
+    created_at: datetime
+
+
+class EstimateStatusUpdate(BaseModel):
+    status: str = Field(pattern="^(open|won|lost|expired)$")
+
+
+class OperationsDashboard(BaseModel):
+    active_jobs: int
+    open_estimates: int
+    open_pipeline_value: float
+    won_revenue: float
+    queued_follow_ups: int
+    needs_review: int
+    automation_rate: float
 
 
 class DiagnosticEvaluationRead(ORMModel):

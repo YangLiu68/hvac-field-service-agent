@@ -6,6 +6,16 @@ An evidence-grounded, safety-gated LLM agent for HVAC field-service workflows. T
 
 The FastAPI service supports the full lifecycle of an HVAC work order: equipment registration, evidence-grounded diagnosis, technician/customer feedback, verified repair outcomes, and an auditable event timeline.
 
+## Unified assistant and operations platform
+
+The web Assistant now uses `POST /assistant/turns` as one durable workflow instead of a disconnected chat box. A turn creates or updates a work order, searches approved resolved cases, searches curated knowledge entries, searches model-specific manuals, generates a user-facing answer, and stores both sides of the conversation with the evidence IDs used. Continue a session by sending its returned `conversation_id`; retrieve its audit trail at `GET /assistant/conversations/{id}`.
+
+Reusable operational knowledge is managed through `POST /knowledge` and `GET /knowledge`. Only verified outcomes approved for retrieval enter case memory, so an unverified model suggestion cannot silently become future “experience.”
+
+The back-office layer adds estimates (`/estimates`), follow-up drafting and approval (`/follow-ups`), and an aggregate `/operations/dashboard`. High-value estimates and messages containing sensitive promises require review. The current `send` endpoint intentionally simulates delivery by recording status and timestamp; connect a real SMS/CRM adapter before production use.
+
+The public product workflow represented in this portfolio MVP now covers customer intake, dispatcher matching/assignment, technician jobs, stateful diagnostic assistance, manual and prior-case retrieval, service documentation, estimates, follow-up review, and an operations dashboard. It does not copy proprietary source code or visuals, and does not yet include production CRM/SMS delivery, wearable hardware, billing, or multi-tenant security.
+
 The retrieval layer replaces a transient FAISS-only index with persistent manual documents/chunks and a hybrid retrieval pipeline:
 
 ```text

@@ -128,6 +128,87 @@ class Job(Base):
     diagnostic_evaluations = relationship("DiagnosticEvaluation", back_populates="job", cascade="all, delete-orphan")
     brief = relationship("JobBrief", back_populates="job", uselist=False, cascade="all, delete-orphan")
     summaries = relationship("ServiceSummary", back_populates="job", cascade="all, delete-orphan")
+    assistant_conversations = relationship("AssistantConversation", back_populates="job", cascade="all, delete-orphan")
+    estimates = relationship("Estimate", back_populates="job", cascade="all, delete-orphan")
+
+
+class KnowledgeEntry(Base):
+    """Curated reusable domain knowledge separate from verified repair cases."""
+
+    __tablename__ = "knowledge_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    category = Column(String, nullable=False, default="general", index=True)
+    keywords = Column(Text, nullable=False, default="")
+    content = Column(Text, nullable=False)
+    source = Column(String, nullable=True)
+    active = Column(Boolean, nullable=False, default=True, index=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+
+
+class AssistantConversation(Base):
+    """Durable natural-language session that may create and update a work order."""
+
+    __tablename__ = "assistant_conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False, index=True)
+    channel = Column(String, nullable=False, default="web", index=True)
+    status = Column(String, nullable=False, default="active", index=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+
+    job = relationship("Job", back_populates="assistant_conversations")
+    turns = relationship("AssistantTurn", back_populates="conversation", cascade="all, delete-orphan")
+
+
+class AssistantTurn(Base):
+    __tablename__ = "assistant_turns"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("assistant_conversations.id"), nullable=False, index=True)
+    role = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    intent = Column(String, nullable=True, index=True)
+    evidence = Column(Text, nullable=False, default="[]")
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+    conversation = relationship("AssistantConversation", back_populates="turns")
+
+
+class Estimate(Base):
+    __tablename__ = "estimates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False, index=True)
+    amount = Column(Float, nullable=False)
+    description = Column(Text, nullable=False)
+    status = Column(String, nullable=False, default="open", index=True)
+    customer_phone = Column(String, nullable=True)
+    next_follow_up_at = Column(DateTime(timezone=True), nullable=True, index=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+
+    job = relationship("Job", back_populates="estimates")
+    follow_ups = relationship("FollowUp", back_populates="estimate", cascade="all, delete-orphan")
+
+
+class FollowUp(Base):
+    __tablename__ = "follow_ups"
+
+    id = Column(Integer, primary_key=True, index=True)
+    estimate_id = Column(Integer, ForeignKey("estimates.id"), nullable=False, index=True)
+    channel = Column(String, nullable=False, default="sms")
+    content = Column(Text, nullable=False)
+    status = Column(String, nullable=False, default="draft", index=True)
+    requires_review = Column(Boolean, nullable=False, default=False, index=True)
+    scheduled_at = Column(DateTime(timezone=True), nullable=True)
+    sent_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+    estimate = relationship("Estimate", back_populates="follow_ups")
 
 
 class AIAnalysis(Base):
