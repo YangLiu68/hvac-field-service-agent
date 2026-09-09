@@ -457,6 +457,9 @@ class UnifiedAssistantResponse(BaseModel):
     similar_cases: list[CaseMemorySearchResult]
     knowledge_entries: list[KnowledgeEntryRead]
     actions: list[str]
+    selected_skill: str
+    required_checks: list[str]
+    retrieval_warnings: list[str]
 
 
 class EstimateCreate(BaseModel):

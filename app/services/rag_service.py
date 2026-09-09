@@ -304,7 +304,20 @@ def hybrid_search(
         if db.query(ManualChunk).count() == 0:
             ingest_manuals(db=db)
 
+        # Progressive retrieval: prefer model-specific evidence, but do not
+        # abandon the workflow when an unfamiliar model has no indexed manual.
+        # The returned scope lets downstream agents communicate lower confidence.
+        retrieval_scope = "model_specific"
         chunks = _candidate_chunks(db, manufacturer, equipment_model, equipment_type)
+        if not chunks and (equipment_model or equipment_type):
+            retrieval_scope = "manufacturer"
+            chunks = _candidate_chunks(db, manufacturer, None, None)
+        if not chunks:
+            retrieval_scope = "generic"
+            chunks = _candidate_chunks(db, None, None, equipment_type)
+        if not chunks:
+            retrieval_scope = "generic"
+            chunks = _candidate_chunks(db, None, None, None)
         if not chunks:
             return []
 
@@ -354,6 +367,7 @@ def hybrid_search(
                     "vector_score": vector_scores.get(chunk_id, 0.0),
                     "rrf_score": rrf_scores[chunk_id],
                     "score": rrf_scores[chunk_id],
+                    "retrieval_scope": retrieval_scope,
                 }
             )
 

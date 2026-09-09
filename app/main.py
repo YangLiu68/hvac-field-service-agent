@@ -1173,7 +1173,18 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
 def unified_assistant_turn(payload: UnifiedAssistantRequest, db: Session = Depends(get_db)):
     """Chat, create/update a work order, retrieve experience, and persist the complete turn."""
     try:
-        return run_unified_turn(db, payload)
+        job = db.get(Job, payload.job_id) if payload.job_id else None
+        if payload.conversation_id:
+            conversation = db.get(AssistantConversation, payload.conversation_id)
+            job = conversation.job if conversation else None
+        equipment = job.equipment if job else None
+        route = skill_router.route(
+            notes=f"{job.technician_notes if job else ''} {payload.message}",
+            error_code=(job.error_code if job else None),
+            equipment_type=(equipment.equipment_type if equipment else payload.equipment_type),
+            equipment_model=(job.equipment_model if job else payload.equipment_model),
+        )
+        return run_unified_turn(db, payload, route)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except Exception as exc:

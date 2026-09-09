@@ -19,7 +19,7 @@ def test_unified_assistant_creates_job_retrieves_memory_and_persists_turns(tmp_p
         finally:
             db.close()
 
-    def fake_answer(job, message, cases, entries, manuals, history):
+    def fake_answer(job, message, cases, entries, manuals, history, skill_route=None):
         return f"Recorded on work order #{job.id}. Found {len(cases)} similar verified case(s)."
 
     monkeypatch.setattr("app.services.unified_assistant._llm_answer", fake_answer)
@@ -43,6 +43,7 @@ def test_unified_assistant_creates_job_retrieves_memory_and_persists_turns(tmp_p
         assert data["created_work_order"] is True
         assert data["similar_cases"][0]["actual_cause"] == "control communication fault"
         assert "saved_conversation" in data["actions"]
+        assert data["selected_skill"] == "no_cooling"
 
         followup = client.post("/assistant/turns", json={"conversation_id": data["conversation_id"], "message": "Supply temperature is 78 F"})
         assert followup.status_code == 200
