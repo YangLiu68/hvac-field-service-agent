@@ -11,6 +11,7 @@ from app.services.rag_service import hybrid_search
 
 
 GREETINGS = {"hi", "hello", "hey", "你好", "您好"}
+LEAK_LINE_PREFIXES = ("analysis:", "reasoning:", "chain of thought:", "internal plan:", "system prompt:")
 
 
 def _tokens(text: str) -> set[str]:
@@ -42,6 +43,46 @@ def _intent(message: str) -> str:
     if any(word in normalized for word in ("voltage", "pressure", "temperature", "airflow", "电压", "压力", "温度", "风量")) and re.search(r"\d", normalized):
         return "field_observation"
     return "diagnostic_question"
+
+
+def _clean_user_facing_content(content: str) -> str:
+    """Remove common hidden-reasoning wrappers without rejecting a whole turn."""
+    clean_lines = []
+    for line in content.strip().splitlines():
+        stripped = line.strip()
+        if stripped.lower().startswith(LEAK_LINE_PREFIXES):
+            continue
+        clean_lines.append(line)
+    cleaned = "\n".join(clean_lines).strip()
+    # The current chat bubble is plain text, so normalize basic model Markdown.
+    return re.sub(r"\*\*(.*?)\*\*", r"\1", cleaned)
+
+
+def _fallback_answer(job: Job, message: str, cases: list[dict], entries: list[KnowledgeEntry], manuals: list[dict], skill_route) -> str:
+    checks = list(getattr(skill_route, "required_checks", []))
+    combined = f"{job.technician_notes} {message}".lower()
+    completed = []
+    signals = {
+        "thermostat_call": ("thermostat is calling", "call for cooling"),
+        "filter_condition": ("filter is clean", "dirty filter"),
+        "airflow": ("airflow", "fan is running", "fan running"),
+        "supply_return_temperature": ("supply air", "return air"),
+        "outdoor_unit_operation": ("outdoor unit", "compressor", "outdoor fan"),
+    }
+    for check in checks:
+        if any(signal in combined for signal in signals.get(check, ())):
+            completed.append(check)
+    missing = [check for check in checks if check not in completed]
+    next_check = missing[0].replace("_", " ") if missing else "review the collected evidence with a qualified HVAC technician"
+    scope_note = ""
+    if manuals and any(item.get("retrieval_scope") != "model_specific" for item in manuals):
+        scope_note = " The document matches are broader reference material, not a confirmed model-specific E102 procedure."
+    return (
+        f"Work order #{job.id} was updated. The {getattr(skill_route, 'selected_skill', 'general_hvac_triage')} workflow is active. "
+        f"I found {len(cases)} verified similar case(s), {len(entries)} curated knowledge entry/entries, and {len(manuals)} manual excerpt(s).{scope_note}\n\n"
+        f"Recorded checks: {', '.join(item.replace('_', ' ') for item in completed) or 'no required check is fully confirmed yet'}. "
+        f"Safest next step: confirm {next_check}. Do not open energized electrical compartments or perform refrigerant work unless qualified."
+    )
 
 
 def _ensure_context(db: Session, payload) -> tuple[AssistantConversation, Job, bool]:
@@ -113,9 +154,10 @@ def _llm_answer(job: Job, message: str, cases: list[dict], entries: list[Knowled
         max_tokens=500,
     )
     content = response.choices[0].message.content if response.choices else ""
-    if not content or any(marker in content.lower() for marker in ("let me think", "system prompt", "instruction says", "chain of thought")):
-        raise RuntimeError("The model returned non-user-facing content")
-    return content.strip()
+    cleaned = _clean_user_facing_content(content or "")
+    if not cleaned or any(line.strip().lower().startswith(LEAK_LINE_PREFIXES) for line in cleaned.splitlines()):
+        return _fallback_answer(job, message, cases, entries, manuals, skill_route)
+    return cleaned
 
 
 def run_unified_turn(db: Session, payload, skill_route=None) -> dict:

@@ -5,6 +5,12 @@ from sqlalchemy.orm import sessionmaker
 from app.database import Base
 from app.main import app, get_db
 from app.models import CaseMemory, Job, VerifiedOutcome
+from app.services.unified_assistant import _clean_user_facing_content
+
+
+def test_user_facing_output_filter_removes_reasoning_wrapper_and_markdown():
+    content = "Analysis: internal plan\nSafest next step: **confirm outdoor unit operation**."
+    assert _clean_user_facing_content(content) == "Safest next step: confirm outdoor unit operation."
 
 
 def test_unified_assistant_creates_job_retrieves_memory_and_persists_turns(tmp_path, monkeypatch):
