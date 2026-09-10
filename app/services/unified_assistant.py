@@ -73,6 +73,16 @@ def _update_check_states(db: Session, conversation: AssistantConversation, messa
             db.add(rows[check])
     normalized = message.lower().strip()
     matched = [check for check in checks if any(signal in normalized for signal in CHECK_SIGNALS.get(check, ()))]
+    # A fragment such as “the supply air is” is not evidence. Temperature
+    # checks require both sides of the measurement (or an explicit complete
+    # confirmation), so the agent asks for the missing value instead of
+    # silently advancing the workflow.
+    if "supply_return_temperature" in matched:
+        temperature_evidence = f"{rows['supply_return_temperature'].evidence or ''} {normalized}"
+        has_supply = bool(re.search(r"supply\s+air[^\n]*\d", temperature_evidence))
+        has_return = bool(re.search(r"return\s+air[^\n]*\d", temperature_evidence))
+        if not (has_supply and has_return) and normalized.rstrip(".!?") not in {"confirmed", "done", "yes", "sure"}:
+            matched.remove("supply_return_temperature")
     affirmative = normalized.rstrip(".!?") in {"yes", "yes it is", "confirmed", "done", "i have done", "i did", "sure", "correct"} or "i have done" in normalized
     if affirmative and not matched:
         requested = [check for check, row in rows.items() if row.status == "requested"]
@@ -92,7 +102,9 @@ def _fallback_answer(job: Job, message: str, cases: list[dict], entries: list[Kn
     checks = list(getattr(skill_route, "required_checks", []))
     completed = [check for check in checks if check_states.get(check) == "confirmed"]
     missing = [check for check in checks if check_states.get(check) != "confirmed"]
-    next_check = missing[0].replace("_", " ") if missing else "review the collected evidence with a qualified HVAC technician"
+    if not missing:
+        return f"I recorded your latest observation on work order #{job.id}. All required no-cooling checks are complete. The measured temperature split and equipment status should now be reviewed by a qualified HVAC technician to determine the repair."
+    next_check = missing[0].replace("_", " ")
     broader_documents = manuals and any(item.get("retrieval_scope") != "model_specific" for item in manuals)
     uncertainty = " The available documents are not confirmed for this exact model." if broader_documents else ""
     return (
