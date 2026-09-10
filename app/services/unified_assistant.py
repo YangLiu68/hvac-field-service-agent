@@ -210,10 +210,13 @@ def _llm_answer(job: Job, message: str, cases: list[dict], entries: list[Knowled
     cleaned = _clean_user_facing_content(content or "")
     if not cleaned or any(line.strip().lower().startswith(LEAK_LINE_PREFIXES) for line in cleaned.splitlines()):
         return _fallback_answer(job, message, cases, entries, manuals, skill_route, check_states or {})
+    if any(marker in cleaned.lower() for marker in ("no_cooling", "selected skill", "required checks", "retrieval count", "harness details")):
+        return _fallback_answer(job, message, cases, entries, manuals, skill_route, check_states or {})
     completed = [name.replace("_", " ") for name, status in (check_states or {}).items() if status == "confirmed"]
     if check_states and completed and all(status == "confirmed" for status in check_states.values()):
         lower = cleaned.lower()
-        if "confirm " in lower or "next check" in lower or "can you" in lower:
+        internal_markers = ("no_cooling", "required checks", "selected skill", "retrieval", "harness", "skill:")
+        if "confirm " in lower or "next check" in lower or "can you" in lower or any(marker in lower for marker in internal_markers):
             return _fallback_answer(job, message, cases, entries, manuals, skill_route, check_states or {})
     if any(f"confirm {name}" in cleaned.lower() for name in completed):
         return _fallback_answer(job, message, cases, entries, manuals, skill_route, check_states or {})
