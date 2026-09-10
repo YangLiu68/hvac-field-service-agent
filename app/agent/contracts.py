@@ -71,6 +71,10 @@ class MeasurementRequestInput(BaseModel):
 class MeasurementRequestOutput(BaseModel):
     request_id: int
     status: str
+    measurement_type: str
+    instructions: str
+    unit: str | None = None
+    safety_note: str | None = None
 
 
 class MeasurementResultInput(BaseModel):

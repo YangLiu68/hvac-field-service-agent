@@ -1089,7 +1089,10 @@ def _agent_result_message(result: dict) -> str:
         return str(result["message"])
     pending = result.get("pending_action") or {}
     if pending.get("status") == "pending":
-        return "A field measurement is needed before the diagnosis can continue."
+        measurement = pending.get("measurement_type", "the requested field measurement")
+        instructions = pending.get("instructions") or "Follow the approved procedure and report the observed value."
+        safety = pending.get("safety_note")
+        return f"Before I narrow the fault further, record {measurement}: {instructions}" + (f" Safety: {safety}" if safety else "")
     return f"Agent status: {result.get('status', 'unknown')}"
 
 

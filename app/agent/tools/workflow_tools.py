@@ -15,7 +15,7 @@ from app.agent.contracts import (
 )
 from app.agent.tool_registry import ToolDefinition
 from app.agent.tools.job_tools import OPEN_JOB_STATUSES
-from app.models import JobEvent, MeasurementRequest, MeasurementResult, utcnow
+from app.models import DiagnosticHypothesis, JobEvent, MeasurementRequest, MeasurementResult, utcnow
 
 
 ALLOWED_STATUS_TRANSITIONS = {
@@ -40,7 +40,14 @@ def request_technician_measurement(context: ToolContext, payload: MeasurementReq
     context.job.status = "waiting_for_technician"
     context.job.updated_at = utcnow()
     _event(context, "measurement_requested", {"request_id": request.id, "measurement_type": payload.measurement_type, "previous_status": previous_status})
-    return MeasurementRequestOutput(request_id=request.id, status=request.status)
+    return MeasurementRequestOutput(
+        request_id=request.id,
+        status=request.status,
+        measurement_type=payload.measurement_type,
+        instructions=payload.instructions,
+        unit=payload.unit,
+        safety_note=payload.safety_note,
+    )
 
 
 def record_measurement(context: ToolContext, payload: MeasurementResultInput) -> MeasurementResultOutput:
@@ -81,6 +88,31 @@ def escalate_to_human(context: ToolContext, payload: EscalationInput) -> Escalat
 
 def complete_diagnosis(context: ToolContext, payload: CompleteDiagnosisInput) -> CompleteDiagnosisOutput:
     diagnostic_run = context.agent_run.diagnostic_run
+    hypothesis_count = context.db.query(DiagnosticHypothesis).filter(
+        DiagnosticHypothesis.diagnostic_run_id == diagnostic_run.id
+    ).count()
+    pending_measurements = context.db.query(MeasurementRequest).filter(
+        MeasurementRequest.job_id == context.job.id,
+        MeasurementRequest.agent_run_id == context.agent_run.id,
+        MeasurementRequest.status == "pending",
+    ).count()
+    if hypothesis_count == 0:
+        # Keep the terminal tool safe and auditable even when a compatible
+        # model skips the explicit hypothesis tool: completing a diagnosis
+        # materializes the claimed cause as the selected hypothesis.
+        context.db.add(DiagnosticHypothesis(
+            diagnostic_run_id=diagnostic_run.id,
+            rank=1,
+            cause=payload.likely_cause,
+            confidence=payload.confidence,
+            supporting_evidence=json.dumps([]),
+            contradicting_evidence=json.dumps([]),
+            next_test=payload.recommendation,
+            selected=True,
+        ))
+        context.db.flush()
+    if pending_measurements:
+        raise ValueError("Pending technician measurements must be resolved before completing diagnosis")
     diagnostic_run.status = "completed"
     diagnostic_run.likely_cause = payload.likely_cause
     diagnostic_run.confidence = payload.confidence

@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.agent.tool_executor import ApprovalRequired, ToolExecutionError, ToolExecutor
 from app.agent.tool_registry import ToolRegistry
 from app.agent.skills.registry import SkillRegistry
-from app.models import AgentRun, JobEvent, utcnow
+from app.models import AgentRun, DiagnosticRun, JobEvent, utcnow
 
 
 class AgentOrchestrationError(RuntimeError):
@@ -352,6 +352,14 @@ class AgentOrchestrator:
                     return self._result(run, pending_action=tool_result["result"])
 
                 if run.status == "completed":
+                    diagnostic = db.get(DiagnosticRun, run.diagnostic_run_id)
+                    if diagnostic:
+                        run.final_message = (
+                            f"Diagnosis recorded for work order #{run.job_id}. "
+                            f"Most likely cause: {diagnostic.likely_cause}. "
+                            f"Confidence: {diagnostic.confidence:.0%}. "
+                            f"Recommended action: {diagnostic.recommendation}"
+                        )
                     run.pending_input = None
                     db.commit()
                     return self._result(run)
