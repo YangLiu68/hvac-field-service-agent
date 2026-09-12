@@ -1174,15 +1174,14 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
         # value (or explicitly says it cannot be measured). A command such as
         # “measure suction pressure” is not a result and must not advance the
         # workflow or create a duplicate request.
-        has_result = bool(re.search(r"\d", payload.message)) or any(
-            phrase in payload.message.lower() for phrase in ("cannot measure", "unable to measure", "not available")
-        )
+        has_result = bool(re.search(r"\d", payload.message))
         if pending and not has_result:
+            unavailable = any(phrase in payload.message.lower() for phrase in ("cannot measure", "unable to measure", "not available"))
             result = {
                 "run_id": run.id,
                 "status": "waiting_for_technician",
                 "current_step": run.current_step,
-                "message": None,
+                "message": "I cannot finalize the fault location without that measurement. Leave this run waiting and have a qualified technician provide the value, or start a new run after the measurement is available." if unavailable else None,
                 "pending_action": {
                     "request_id": pending.id,
                     "status": pending.status,
@@ -1191,6 +1190,14 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
                     "unit": pending.unit,
                     "safety_note": pending.safety_note,
                 },
+            }
+        elif run.status == "completed":
+            result = {
+                "run_id": run.id,
+                "status": "completed",
+                "current_step": run.current_step,
+                "message": "This diagnostic run is already complete. Start a new run if the equipment condition or available measurements have changed.",
+                "pending_action": None,
             }
         else:
             if pending and has_result:
