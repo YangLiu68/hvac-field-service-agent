@@ -4,6 +4,7 @@ import base64
 import hashlib
 import hmac
 import secrets
+import re
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, FastAPI, HTTPException, Header
@@ -1162,9 +1163,44 @@ def chat_with_assistant(run_id: int, payload: AgentMessageCreate, db: Session = 
 def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Session = Depends(get_db)):
     """Reserved for structured workflow continuation and its audit trail."""
     try:
+        run = get_agent_run_or_404(db, run_id)
         db.add(AgentMessage(agent_run_id=run_id, role="technician", content=payload.message))
         db.commit()
-        result = agent_orchestrator.run(db, run_id, operator_message=payload.message)
+        pending = db.query(MeasurementRequest).filter(
+            MeasurementRequest.agent_run_id == run_id,
+            MeasurementRequest.status == "pending",
+        ).order_by(MeasurementRequest.id.desc()).first()
+        # A pending request is completed only when the technician supplies a
+        # value (or explicitly says it cannot be measured). A command such as
+        # “measure suction pressure” is not a result and must not advance the
+        # workflow or create a duplicate request.
+        has_result = bool(re.search(r"\d", payload.message)) or any(
+            phrase in payload.message.lower() for phrase in ("cannot measure", "unable to measure", "not available")
+        )
+        if pending and not has_result:
+            result = {
+                "run_id": run.id,
+                "status": "waiting_for_technician",
+                "current_step": run.current_step,
+                "message": None,
+                "pending_action": {
+                    "request_id": pending.id,
+                    "status": pending.status,
+                    "measurement_type": pending.measurement_type,
+                    "instructions": pending.instructions,
+                    "unit": pending.unit,
+                    "safety_note": pending.safety_note,
+                },
+            }
+        else:
+            if pending and has_result:
+                tool_executor.execute(
+                    db=db,
+                    agent_run_id=run_id,
+                    tool_name="record_measurement",
+                    arguments={"request_id": pending.id, "value": payload.message, "unit": pending.unit, "recorded_by": "Technician"},
+                )
+            result = agent_orchestrator.run(db, run_id, operator_message=payload.message)
         db.add(AgentMessage(agent_run_id=run_id, role="assistant", content=_agent_result_message(result)))
         db.commit()
         return result

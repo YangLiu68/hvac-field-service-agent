@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.agent.tool_executor import ApprovalRequired, ToolExecutionError, ToolExecutor
 from app.agent.tool_registry import ToolRegistry
 from app.agent.skills.registry import SkillRegistry
-from app.models import AgentRun, DiagnosticRun, JobEvent, utcnow
+from app.models import AgentRun, DiagnosticHypothesis, DiagnosticRun, JobEvent, MeasurementRequest, utcnow
 
 
 class AgentOrchestrationError(RuntimeError):
@@ -249,7 +249,37 @@ class AgentOrchestrator:
             instructions = "Record the next observable symptom or manufacturer-recommended measurement for this equipment."
             safety_note = "Do not access energized compartments unless qualified."
         try:
-            hypothesis = self.tool_executor.execute(
+            pending = db.query(MeasurementRequest).filter(
+                MeasurementRequest.agent_run_id == run.id,
+                MeasurementRequest.status == "pending",
+            ).order_by(MeasurementRequest.id.desc()).first()
+            if pending:
+                run.status = "waiting_for_technician"
+                db.commit()
+                return {
+                    "request_id": pending.id,
+                    "status": pending.status,
+                    "measurement_type": pending.measurement_type,
+                    "instructions": pending.instructions,
+                    "unit": pending.unit,
+                    "safety_note": pending.safety_note,
+                }
+            existing_hypothesis = db.query(DiagnosticHypothesis).filter(
+                DiagnosticHypothesis.diagnostic_run_id == run.diagnostic_run_id,
+            ).order_by(DiagnosticHypothesis.rank.asc()).first()
+            if existing_hypothesis:
+                self.tool_executor.execute(
+                    db=db,
+                    agent_run_id=run.id,
+                    tool_name="complete_diagnosis",
+                    arguments={
+                        "likely_cause": existing_hypothesis.cause,
+                        "confidence": min(existing_hypothesis.confidence or 0.35, 0.65),
+                        "recommendation": existing_hypothesis.next_test or "Review the recorded measurements against the manufacturer procedure.",
+                    },
+                )
+                return {"status": "completed"}
+            self.tool_executor.execute(
                 db=db,
                 agent_run_id=run.id,
                 tool_name="create_diagnostic_hypothesis",
@@ -330,6 +360,18 @@ class AgentOrchestrator:
                     recovered = self._recover_without_tool(db, run)
                     run = db.get(AgentRun, run_id)
                     if recovered is not None:
+                        if run.status == "completed":
+                            diagnostic = db.get(DiagnosticRun, run.diagnostic_run_id)
+                            if diagnostic:
+                                run.final_message = (
+                                    f"Diagnosis recorded for work order #{run.job_id}. "
+                                    f"Most likely cause: {diagnostic.likely_cause}. "
+                                    f"Confidence: {diagnostic.confidence:.0%}. "
+                                    f"Recommended action: {diagnostic.recommendation}"
+                                )
+                            run.pending_input = None
+                            db.commit()
+                            return self._result(run)
                         db.add(JobEvent(job_id=run.job_id, event_type="agent_recovered_without_tool", event_data=json.dumps({"agent_run_id": run.id, "recovery": "hypothesis_and_measurement_request"})))
                         db.commit()
                         return self._result(run, pending_action=recovered)
