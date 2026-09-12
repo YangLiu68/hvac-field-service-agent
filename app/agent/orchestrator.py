@@ -220,6 +220,55 @@ class AgentOrchestrator:
             "output_text": getattr(message, "content", None) or "",
         }
 
+    def _recover_without_tool(self, db: Session, run: AgentRun) -> dict | None:
+        """Recover when a provider ignores tool_choice and returns prose.
+
+        The prose may contain hidden reasoning and is never shown to the
+        technician. We preserve the workflow contract by materializing a
+        conservative hypothesis and requesting one concrete, safe measurement.
+        """
+        skill_name = run.skill_name or "general_hvac_triage"
+        if skill_name == "no_cooling":
+            cause = "Insufficient cooling capacity: refrigerant circuit, compressor, or metering device"
+            measurement_type = "refrigerant_circuit_measurements"
+            instructions = "A qualified technician should measure suction/liquid pressure, superheat, subcooling, and compressor current using the manufacturer procedure."
+            safety_note = "Refrigerant and energized electrical measurements require appropriate qualification and PPE."
+        elif skill_name == "low_airflow":
+            cause = "Restricted airflow or inadequate blower performance"
+            measurement_type = "static_pressure"
+            instructions = "Measure total external static pressure and compare it with the equipment rating."
+            safety_note = "Keep clear of moving equipment and de-energize before opening access panels."
+        elif skill_name == "thermostat_issue":
+            cause = "Thermostat call or low-voltage control fault"
+            measurement_type = "low_voltage_control"
+            instructions = "Verify the thermostat operating mode and measure the approved low-voltage call at the control terminals."
+            safety_note = "Only a qualified technician should perform electrical measurements."
+        else:
+            cause = "Insufficient evidence to isolate the HVAC fault"
+            measurement_type = "diagnostic_observation"
+            instructions = "Record the next observable symptom or manufacturer-recommended measurement for this equipment."
+            safety_note = "Do not access energized compartments unless qualified."
+        try:
+            hypothesis = self.tool_executor.execute(
+                db=db,
+                agent_run_id=run.id,
+                tool_name="create_diagnostic_hypothesis",
+                arguments={"cause": cause, "confidence": 0.45, "supporting_evidence": [], "contradicting_evidence": [], "next_test": instructions, "selected": True},
+            )
+            request = self.tool_executor.execute(
+                db=db,
+                agent_run_id=run.id,
+                tool_name="request_technician_measurement",
+                arguments={"measurement_type": measurement_type, "instructions": instructions, "safety_note": safety_note},
+            )
+            run = db.get(AgentRun, run.id)
+            run.status = "waiting_for_technician"
+            db.commit()
+            return request["result"]
+        except ToolExecutionError:
+            db.rollback()
+            return None
+
     def run(self, db: Session, run_id: int, operator_message: str | None = None) -> dict:
         run = db.get(AgentRun, run_id)
         if run is None:
@@ -278,14 +327,19 @@ class AgentOrchestrator:
                 output = _value(response, "output", []) or []
                 function_calls = [item for item in output if _value(item, "type") == "function_call"]
                 if not function_calls:
-                    text = _value(response, "output_text") or ""
-                    run.final_message = text
+                    recovered = self._recover_without_tool(db, run)
+                    run = db.get(AgentRun, run_id)
+                    if recovered is not None:
+                        db.add(JobEvent(job_id=run.job_id, event_type="agent_recovered_without_tool", event_data=json.dumps({"agent_run_id": run.id, "recovery": "hypothesis_and_measurement_request"})))
+                        db.commit()
+                        return self._result(run, pending_action=recovered)
+                    run.final_message = "The diagnostic agent could not produce a valid tool action."
                     run.status = "failed"
-                    run.error_message = "Agent ended without calling complete_diagnosis"
+                    run.error_message = "Agent returned no tool call and recovery failed"
                     run.completed_at = utcnow()
-                    db.add(JobEvent(job_id=run.job_id, event_type="agent_stopped_without_completion", event_data=json.dumps({"message": text})))
+                    db.add(JobEvent(job_id=run.job_id, event_type="agent_stopped_without_completion", event_data=json.dumps({"reason": "no_tool_call"})))
                     db.commit()
-                    return self._result(run, message=text)
+                    return self._result(run, message=run.final_message)
 
                 call = function_calls[0]
                 tool_name = _value(call, "name")
