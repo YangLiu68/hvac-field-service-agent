@@ -1166,6 +1166,17 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
         run = get_agent_run_or_404(db, run_id)
         db.add(AgentMessage(agent_run_id=run_id, role="technician", content=payload.message))
         db.commit()
+        if payload.message.strip().lower().rstrip(".!?") in {"hi", "hello", "hey", "你好", "您好"}:
+            result = {
+                "run_id": run.id,
+                "status": run.status,
+                "current_step": run.current_step,
+                "message": "Hi — I’m here to help with this work order. Tell me what you are seeing or ask any field-service question.",
+                "pending_action": None,
+            }
+            db.add(AgentMessage(agent_run_id=run_id, role="assistant", content=result["message"]))
+            db.commit()
+            return result
         pending = db.query(MeasurementRequest).filter(
             MeasurementRequest.agent_run_id == run_id,
             MeasurementRequest.status == "pending",
