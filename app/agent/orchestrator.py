@@ -16,6 +16,7 @@ from app.agent.tool_executor import ApprovalRequired, ToolExecutionError, ToolEx
 from app.agent.tool_registry import ToolRegistry
 from app.agent.skills.registry import SkillRegistry
 from app.models import AgentRun, DiagnosticHypothesis, DiagnosticRun, JobEvent, MeasurementRequest, MeasurementResult, utcnow
+from app.agent.planner import choose_next_action, new_state, state_summary, update_from_text
 
 
 class AgentOrchestrationError(RuntimeError):
@@ -84,6 +85,10 @@ class AgentOrchestrator:
 
     def _instructions(self, run: AgentRun) -> str:
         skill = self.skill_registry.get(run.skill_name or "general_hvac_triage")
+        try:
+            state = json.loads(run.state_json or "{}")
+        except json.JSONDecodeError:
+            state = new_state(run.skill_name or "general_hvac_triage")
         return (
             "You are a conservative HVAC field diagnostic agent. Follow the selected Skill exactly. "
             "Never ask the technician a question in plain text. Any request for information must use request_technician_measurement. Every response must call exactly one tool until complete_diagnosis or escalate_to_human is called. "
@@ -95,7 +100,9 @@ class AgentOrchestrator:
             f"Workflow: {skill.description}\n"
             f"Required checks: {', '.join(skill.required_checks)}\n"
             f"Completion criteria: {', '.join(skill.completion_criteria)}\n"
-            f"Escalate when: {', '.join(skill.escalation_conditions)}"
+            f"Escalate when: {', '.join(skill.escalation_conditions)}\n"
+            f"Durable diagnostic state: {state_summary(state)}\n"
+            "Choose the next action from the pending checks in order. Ask for one field observation at a time; never bundle unrelated measurements."
         )
 
     def _tools_for(self, run: AgentRun) -> list[dict]:
@@ -114,13 +121,128 @@ class AgentOrchestrator:
     def _initial_input(self, run: AgentRun) -> str:
         job = run.job
         equipment = job.equipment
+        try:
+            state = json.loads(run.state_json or "{}")
+        except json.JSONDecodeError:
+            state = new_state(run.skill_name or "general_hvac_triage")
         return (
             f"Begin diagnosis for work order {job.id}.\n"
             f"Technician notes: {job.technician_notes}\n"
             f"Error code: {job.error_code or 'none'}\n"
             f"Equipment: {(equipment.manufacturer + ' ' if equipment else '')}{job.equipment_model}\n"
-            f"Equipment type: {equipment.equipment_type if equipment else 'unknown'}"
+            f"Equipment type: {equipment.equipment_type if equipment else 'unknown'}\n"
+            f"Diagnostic state: {state_summary(state)}"
         )
+
+    def _prepare_next_action(self, db: Session, run: AgentRun, operator_message: str) -> dict | None:
+        """Run the deterministic graph preflight before allowing LLM planning.
+
+        This prevents a model from jumping directly to invasive refrigerant or
+        electrical work when cheap observations are still unknown.  Retrieval
+        remains a real audited tool sequence; only the next action selection is
+        deterministic and safety/latency aware.
+        """
+        if not operator_message or db.query(MeasurementRequest).filter(
+            MeasurementRequest.agent_run_id == run.id, MeasurementRequest.status == "pending"
+        ).count():
+            return None
+        initial = run.current_step == 0
+        skill_name = run.skill_name or "general_hvac_triage"
+        try:
+            state = json.loads(run.state_json or "{}")
+        except json.JSONDecodeError:
+            state = new_state(skill_name)
+        if not state.get("checks"):
+            state = new_state(skill_name)
+        update_from_text(state, run.job.technician_notes)
+        update_from_text(state, operator_message)
+
+        allowed = set(self.skill_registry.get(skill_name).allowed_tools)
+        retrieval_calls = [
+            ("get_job_context", {}),
+            ("get_equipment_profile", {}),
+            ("get_equipment_history", {}),
+            ("search_verified_repairs", {"query": f"{run.job.error_code or ''} {run.job.technician_notes}", "limit": 5}),
+            ("search_error_codes", {"error_code": run.job.error_code, "top_k": 5}) if run.job.error_code else None,
+            ("search_service_manuals", {"query": f"{run.job.equipment_model} {run.job.error_code or ''} troubleshooting", "top_k": 5}),
+        ]
+        retrieval_keys = {
+            "get_job_context": "job_context", "get_equipment_profile": "equipment",
+            "get_equipment_history": "history", "search_verified_repairs": "cases",
+            "search_error_codes": "manuals", "search_service_manuals": "manuals",
+        }
+        if initial:
+            for item in retrieval_calls:
+                if item is None or item[0] not in allowed:
+                    continue
+                tool_name, arguments = item
+                try:
+                    self.tool_executor.execute(db=db, agent_run_id=run.id, tool_name=tool_name, arguments=arguments)
+                    state.setdefault("retrieval", {})[retrieval_keys[tool_name]] = True
+                except (ToolExecutionError, ValueError):
+                    db.rollback()
+
+        if initial and not db.query(DiagnosticHypothesis).filter(
+            DiagnosticHypothesis.diagnostic_run_id == run.diagnostic_run_id
+        ).count():
+            checks = state.get("checks", {})
+            control_confidence = 0.12 if checks.get("thermostat_call", {}).get("status") == "confirmed" else 0.25
+            airflow_confidence = 0.12 if checks.get("filter_airflow", {}).get("status") == "confirmed" else 0.25
+            circuit_confidence = 0.45 if checks.get("outdoor_unit_operation", {}).get("status") == "confirmed" and checks.get("supply_return_temperature", {}).get("status") == "confirmed" else 0.25
+            candidates = [
+                ("Thermostat or low-voltage control", control_confidence),
+                ("Airflow restriction or evaporator icing", airflow_confidence),
+                ("Outdoor/compressor or refrigerant-circuit fault", circuit_confidence),
+            ]
+            candidates.sort(key=lambda item: item[1], reverse=True)
+            state["hypotheses"] = [{"rank": rank, "cause": cause, "confidence": confidence} for rank, (cause, confidence) in enumerate(candidates, start=1)]
+            for rank, (cause, confidence) in enumerate(candidates, start=1):
+                db.add(DiagnosticHypothesis(
+                    diagnostic_run_id=run.diagnostic_run_id,
+                    rank=rank,
+                    cause=cause,
+                    confidence=confidence,
+                    supporting_evidence=json.dumps(state.get("observations", [])[-3:]),
+                    contradicting_evidence=json.dumps([]),
+                    next_test=None,
+                    selected=(rank == 1),
+                ))
+            db.add(JobEvent(job_id=run.job_id, event_type="diagnostic_state_initialized", event_data=json.dumps({"state": state, "graph": "no_cooling"})))
+        else:
+            state["hypotheses"] = [{
+                "rank": item.rank, "cause": item.cause, "confidence": item.confidence,
+            } for item in db.query(DiagnosticHypothesis).filter(
+                DiagnosticHypothesis.diagnostic_run_id == run.diagnostic_run_id,
+            ).order_by(DiagnosticHypothesis.rank.asc()).all()]
+
+        action = choose_next_action(state, skill_name)
+        if action is None:
+            return None
+        state["next_action"] = action
+        state["confidence"] = "low" if action["measurement_type"] not in {"refrigerant_circuit_measurements"} else "moderate"
+        run.state_json = json.dumps(state, sort_keys=True)
+        db.commit()
+        if "request_technician_measurement" not in allowed:
+            return None
+        try:
+            result = self.tool_executor.execute(
+                db=db,
+                agent_run_id=run.id,
+                tool_name="request_technician_measurement",
+                arguments={key: action[key] for key in ("measurement_type", "instructions", "unit", "safety_note")},
+            )
+        except ApprovalRequired as exc:
+            refreshed = db.get(AgentRun, run.id)
+            return {"approval_id": exc.approval_id, "tool_name": "request_technician_measurement", "risk": "high", "status": refreshed.status}
+        except ToolExecutionError:
+            db.rollback()
+            return None
+        refreshed = db.get(AgentRun, run.id)
+        if refreshed:
+            refreshed.status = "waiting_for_technician"
+            refreshed.pending_input = json.dumps([{"role": "user", "content": f"Planner action: {action['measurement_type']}"}])
+            db.commit()
+        return result["result"]
 
     def _response(self, run: AgentRun, input_value: Any):
         if self._uses_openrouter():
@@ -366,6 +488,13 @@ class AgentOrchestrator:
         run.status = "running"
         db.commit()
 
+        planned = self._prepare_next_action(db, run, operator_message or "")
+        if planned is not None:
+            refreshed = db.get(AgentRun, run_id)
+            if planned.get("approval_id"):
+                return self._result(refreshed, pending_action=planned)
+            return self._result(refreshed, pending_action=planned)
+
         try:
             while run.current_step < run.max_steps:
                 response = self._response(run, input_value)
@@ -509,6 +638,10 @@ class AgentOrchestrator:
 
     @staticmethod
     def _result(run: AgentRun, message: str | None = None, pending_action: dict | None = None) -> dict:
+        if message is None and pending_action and pending_action.get("status") == "pending":
+            measurement = pending_action.get("measurement_type", "field observation").replace("_", " ")
+            instructions = pending_action.get("instructions") or "Follow the approved procedure and report the result."
+            message = f"Next check — {measurement}. {instructions}"
         return {
             "run_id": run.id,
             "status": run.status,

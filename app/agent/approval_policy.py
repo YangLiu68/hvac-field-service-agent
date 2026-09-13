@@ -13,6 +13,7 @@ HIGH_RISK_TOOLS = {
 HIGH_RISK_MEASUREMENT_TERMS = {
     "live_voltage", "voltage_live", "electrical_panel", "refrigerant_pressure",
     "suction_pressure", "discharge_pressure", "superheat", "subcooling",
+    "refrigerant_circuit_measurements",
 }
 
 

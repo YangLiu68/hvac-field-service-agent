@@ -77,6 +77,7 @@ def initialize_database():
                 "pending_input": "TEXT",
                 "final_message": "TEXT",
                 "pending_approval_call": "TEXT",
+                "state_json": "TEXT NOT NULL DEFAULT '{}'",
             }
             for name, sql_type in agent_run_additions.items():
                 if name not in agent_run_columns:

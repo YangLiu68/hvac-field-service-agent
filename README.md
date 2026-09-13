@@ -16,6 +16,24 @@ The back-office layer adds estimates (`/estimates`), follow-up drafting and appr
 
 The public product workflow represented in this portfolio MVP now covers customer intake, dispatcher matching/assignment, technician jobs, stateful diagnostic assistance, manual and prior-case retrieval, service documentation, estimates, follow-up review, and an operations dashboard. It does not copy proprietary source code or visuals, and does not yet include production CRM/SMS delivery, wearable hardware, billing, or multi-tenant security.
 
+### Stateful diagnostic graph
+
+The guided technician path now starts with a deterministic graph preflight. It
+persists a JSON diagnostic state on each `AgentRun`, parses only explicit field
+observations, ranks hypotheses, retrieves job/equipment/history/manual evidence,
+and selects one next action using a safe information-gain heuristic. The default
+no-cooling order is thermostat call → indoor blower → outdoor unit → filter and
+airflow → supply/return temperatures → coil icing, with refrigerant-circuit
+readings deferred until those checks are known. The LLM remains in the loop for
+language understanding and evidence-based continuation, but it cannot skip the
+preflight or invent measurements.
+
+Inspect this state with `GET /agent-runs/{run_id}/state`. The response includes
+completed/unknown checks, ranked hypotheses, retrieval flags, the selected next
+action, and its safety/information-gain score. Post-repair verification is
+recorded through `POST /jobs/{job_id}/repair-verification`; generated service
+summaries include the verification checklist.
+
 The retrieval layer replaces a transient FAISS-only index with persistent manual documents/chunks and a hybrid retrieval pipeline:
 
 ```text

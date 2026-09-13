@@ -128,6 +128,7 @@ class Job(Base):
     diagnostic_evaluations = relationship("DiagnosticEvaluation", back_populates="job", cascade="all, delete-orphan")
     brief = relationship("JobBrief", back_populates="job", uselist=False, cascade="all, delete-orphan")
     summaries = relationship("ServiceSummary", back_populates="job", cascade="all, delete-orphan")
+    repair_verifications = relationship("RepairVerification", back_populates="job", cascade="all, delete-orphan")
     assistant_conversations = relationship("AssistantConversation", back_populates="job", cascade="all, delete-orphan")
     estimates = relationship("Estimate", back_populates="job", cascade="all, delete-orphan")
 
@@ -307,6 +308,9 @@ class AgentRun(Base):
     pending_input = Column(Text, nullable=True)
     final_message = Column(Text, nullable=True)
     pending_approval_call = Column(Text, nullable=True)
+    # JSON snapshot of the structured diagnostic graph/state.  Keeping this on
+    # the run makes continuation independent of the chat transcript.
+    state_json = Column(Text, nullable=False, default="{}")
     current_step = Column(Integer, default=0, nullable=False)
     max_steps = Column(Integer, default=20, nullable=False)
     error_message = Column(Text, nullable=True)
@@ -355,6 +359,25 @@ class ServiceSummary(Base):
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     job = relationship("Job", back_populates="summaries")
+
+
+class RepairVerification(Base):
+    """Post-repair checklist that closes the diagnostic loop."""
+
+    __tablename__ = "repair_verifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False, index=True)
+    diagnostic_run_id = Column(Integer, ForeignKey("diagnostic_runs.id"), nullable=True, index=True)
+    repair_action = Column(Text, nullable=False)
+    checklist = Column(Text, nullable=False, default="{}")
+    status = Column(String, nullable=False, default="pending", index=True)
+    verified_by = Column(String, nullable=False)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+    job = relationship("Job", back_populates="repair_verifications")
+    diagnostic_run = relationship("DiagnosticRun")
 
 
 class AgentStep(Base):

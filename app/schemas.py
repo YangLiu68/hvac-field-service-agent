@@ -188,6 +188,21 @@ class ServiceSummaryRead(BaseModel):
     created_at: datetime
 
 
+class RepairVerificationCreate(BaseModel):
+    diagnostic_run_id: int | None = None
+    repair_action: str = Field(min_length=1)
+    checklist: dict[str, bool] = Field(min_length=1)
+    verified_by: str = Field(min_length=1)
+    notes: str | None = None
+
+
+class RepairVerificationRead(ORMModel, RepairVerificationCreate):
+    id: int
+    job_id: int
+    status: str
+    created_at: datetime
+
+
 class SourceItem(BaseModel):
     document: str
     page: int
@@ -314,6 +329,7 @@ class AgentRunRead(ORMModel):
     pending_input: str | None
     final_message: str | None
     error_message: str | None
+    state_json: str
     started_at: datetime
     completed_at: datetime | None
 
@@ -352,6 +368,15 @@ class AgentRunResult(BaseModel):
     current_step: int
     message: str | None = None
     pending_action: dict | None = None
+
+
+class AgentStateRead(BaseModel):
+    run_id: int
+    status: str
+    current_step: int
+    state: dict
+    hypotheses: list[dict]
+    next_action: dict | None = None
 
 
 class AgentMessageCreate(BaseModel):

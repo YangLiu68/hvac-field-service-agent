@@ -32,6 +32,7 @@ from app.models import (
     TechnicianProfile,
     ServiceRequest,
     ServiceSummary,
+    RepairVerification,
     Assignment,
     User,
     VerifiedOutcome,
@@ -67,6 +68,7 @@ from app.schemas import (
     SkillRead,
     SkillRouteRead,
     AgentRunResult,
+    AgentStateRead,
     AgentMessageCreate,
     AgentMessageRead,
     ApprovalRequestRead,
@@ -86,6 +88,8 @@ from app.schemas import (
     AssignmentCreate,
     AssignmentRead,
     ServiceSummaryRead,
+    RepairVerificationCreate,
+    RepairVerificationRead,
     TechnicianTaskRead,
     LoginRequest,
     LoginResponse,
@@ -103,6 +107,7 @@ from app.schemas import (
 from app.agent import ApprovalRequired, ToolExecutionError, ToolExecutor, build_default_registry
 from app.agent.skills import SkillRouter, build_default_skill_registry
 from app.agent.orchestrator import AgentOrchestrator, AgentOrchestrationError
+from app.agent.planner import new_state, update_from_text, record_measurement
 from app.services.ai_service import AIServiceError, analyze_job, answer_field_question
 from app.services.rag_service import ManualIndexError, hybrid_search, ingest_manuals
 from app.services.case_memory import evaluation_metrics, evaluate_closed_outcome, index_verified_outcome, search_case_memories
@@ -562,12 +567,22 @@ def create_service_summary(job_id: int, db: Session = Depends(get_db)):
     latest = db.query(DiagnosticRun).filter(DiagnosticRun.job_id == job.id).order_by(DiagnosticRun.id.desc()).first()
     measurements = db.query(MeasurementResult).join(MeasurementResult.request).filter(MeasurementRequest.job_id == job.id).all()
     measurement_text = "; ".join(f"{item.request.measurement_type}: {item.value}{(' ' + item.unit) if item.unit else ''}" for item in measurements)
+    verification = db.query(RepairVerification).filter(
+        RepairVerification.job_id == job.id,
+    ).order_by(RepairVerification.id.desc()).first()
+    verification_text = "Pending repair verification."
+    if verification:
+        checklist = json.loads(verification.checklist or "{}")
+        verification_text = f"{verification.status.title()} by {verification.verified_by}: " + ", ".join(
+            f"{name}={'pass' if passed else 'not verified'}" for name, passed in checklist.items()
+        )
     content = (
         f"Service summary — {job.customer_name}\n"
         f"Equipment: {job.equipment_model}. Reported issue: {job.technician_notes}\n"
         f"Assessment: {latest.likely_cause if latest and latest.likely_cause else 'Pending technician verification.'}\n"
         f"Recommended next step: {latest.recommendation if latest and latest.recommendation else 'Continue approved diagnostic checks.'}\n"
-        f"Measurements: {measurement_text or 'No measurements recorded.'}"
+        f"Measurements: {measurement_text or 'No measurements recorded.'}\n"
+        f"Repair verification: {verification_text}"
     )
     summary = ServiceSummary(job_id=job.id, content=content)
     db.add(summary)
@@ -575,6 +590,68 @@ def create_service_summary(job_id: int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(summary)
     return summary
+
+
+@app.post("/jobs/{job_id}/repair-verification", response_model=RepairVerificationRead, status_code=201)
+def create_repair_verification(job_id: int, payload: RepairVerificationCreate, db: Session = Depends(get_db)):
+    """Record a post-repair checklist; diagnosis is not considered closed until this is verified."""
+    job = get_job_or_404(db, job_id)
+    if payload.diagnostic_run_id is not None:
+        diagnostic = db.get(DiagnosticRun, payload.diagnostic_run_id)
+        if not diagnostic or diagnostic.job_id != job_id:
+            raise HTTPException(status_code=400, detail="Diagnostic run does not belong to this job")
+    status = "verified" if all(payload.checklist.values()) else "pending"
+    verification = RepairVerification(
+        job_id=job_id,
+        diagnostic_run_id=payload.diagnostic_run_id,
+        repair_action=payload.repair_action,
+        checklist=json.dumps(payload.checklist, sort_keys=True),
+        status=status,
+        verified_by=payload.verified_by,
+        notes=payload.notes,
+    )
+    db.add(verification)
+    job.status = "closed" if status == "verified" else "in_service"
+    job.updated_at = utcnow()
+    db.flush()
+    add_event(db, job_id, "repair_verification_recorded", {
+        "verification_id": verification.id, "status": status,
+        "repair_action": payload.repair_action, "checklist": payload.checklist,
+    })
+    db.commit()
+    db.refresh(verification)
+    return {
+        "id": verification.id,
+        "job_id": verification.job_id,
+        "diagnostic_run_id": verification.diagnostic_run_id,
+        "repair_action": verification.repair_action,
+        "checklist": json.loads(verification.checklist),
+        "status": verification.status,
+        "verified_by": verification.verified_by,
+        "notes": verification.notes,
+        "created_at": verification.created_at,
+    }
+
+
+@app.get("/jobs/{job_id}/repair-verification", response_model=RepairVerificationRead)
+def get_repair_verification(job_id: int, db: Session = Depends(get_db)):
+    get_job_or_404(db, job_id)
+    verification = db.query(RepairVerification).filter(
+        RepairVerification.job_id == job_id,
+    ).order_by(RepairVerification.id.desc()).first()
+    if verification is None:
+        raise HTTPException(status_code=404, detail="Repair verification not found")
+    return {
+        "id": verification.id,
+        "job_id": verification.job_id,
+        "diagnostic_run_id": verification.diagnostic_run_id,
+        "repair_action": verification.repair_action,
+        "checklist": json.loads(verification.checklist or "{}"),
+        "status": verification.status,
+        "verified_by": verification.verified_by,
+        "notes": verification.notes,
+        "created_at": verification.created_at,
+    }
 
 
 @app.get("/assignments", response_model=list[AssignmentRead])
@@ -921,6 +998,7 @@ def create_agent_run(
         max_steps=max_steps,
         skill_name=selected_skill_name,
         status="tool_testing",
+        state_json=json.dumps(new_state(selected_skill_name or "general_hvac_triage"), sort_keys=True),
     )
     db.add(run)
     job.status = "diagnosing"
@@ -941,6 +1019,35 @@ def get_agent_run(run_id: int, db: Session = Depends(get_db)):
 def list_agent_messages(run_id: int, db: Session = Depends(get_db)):
     get_agent_run_or_404(db, run_id)
     return db.query(AgentMessage).filter(AgentMessage.agent_run_id == run_id).order_by(AgentMessage.id.asc()).all()
+
+
+@app.get("/agent-runs/{run_id}/state", response_model=AgentStateRead)
+def get_agent_state(run_id: int, db: Session = Depends(get_db)):
+    """Expose the durable graph snapshot for the technician/debug console."""
+    run = get_agent_run_or_404(db, run_id)
+    try:
+        state = json.loads(run.state_json or "{}")
+    except json.JSONDecodeError:
+        state = new_state(run.skill_name or "general_hvac_triage")
+    hypotheses = db.query(DiagnosticHypothesis).filter(
+        DiagnosticHypothesis.diagnostic_run_id == run.diagnostic_run_id,
+    ).order_by(DiagnosticHypothesis.rank.asc()).all()
+    return {
+        "run_id": run.id,
+        "status": run.status,
+        "current_step": run.current_step,
+        "state": state,
+        "hypotheses": [{
+            "rank": item.rank,
+            "cause": item.cause,
+            "confidence": item.confidence,
+            "supporting_evidence": json.loads(item.supporting_evidence or "[]"),
+            "contradicting_evidence": json.loads(item.contradicting_evidence or "[]"),
+            "next_test": item.next_test,
+            "selected": item.selected,
+        } for item in hypotheses],
+        "next_action": state.get("next_action"),
+    }
 
 
 @app.post("/agent-runs/{run_id}/tools", response_model=ToolExecuteResponse)
@@ -1093,7 +1200,16 @@ def _agent_result_message(result: dict) -> str:
         measurement = pending.get("measurement_type", "the requested field measurement")
         instructions = pending.get("instructions") or "Follow the approved procedure and report the observed value."
         safety = pending.get("safety_note")
-        return f"Before I narrow the fault further, record {measurement}: {instructions}" + (f" Safety: {safety}" if safety else "")
+        labels = {
+            "thermostat_call": "thermostat cooling call",
+            "indoor_blower": "indoor blower operation",
+            "outdoor_unit_operation": "outdoor condenser operation",
+            "filter_airflow": "filter and airflow condition",
+            "supply_return_temperature": "supply and return air temperatures",
+            "evaporator_ice": "evaporator coil icing",
+            "refrigerant_circuit_measurements": "refrigerant-circuit readings",
+        }
+        return f"Next check — {labels.get(measurement, measurement.replace('_', ' '))}. {instructions}" + (f" Safety: {safety}" if safety else "")
     return f"Agent status: {result.get('status', 'unknown')}"
 
 
@@ -1177,6 +1293,13 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
             db.add(AgentMessage(agent_run_id=run_id, role="assistant", content=result["message"]))
             db.commit()
             return result
+        try:
+            state = json.loads(run.state_json or "{}")
+        except json.JSONDecodeError:
+            state = new_state(run.skill_name or "general_hvac_triage")
+        update_from_text(state, payload.message)
+        run.state_json = json.dumps(state, sort_keys=True)
+        db.commit()
         pending = db.query(MeasurementRequest).filter(
             MeasurementRequest.agent_run_id == run_id,
             MeasurementRequest.status == "pending",
@@ -1186,7 +1309,13 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
         # “measure suction pressure” is not a result and must not advance the
         # workflow or create a duplicate request.
         has_result = bool(re.search(r"\d", payload.message))
-        if pending and not has_result:
+        numeric_required = bool(pending and (
+            pending.unit or pending.measurement_type in {
+                "refrigerant_circuit_measurements", "suction_pressure", "discharge_pressure",
+                "superheat", "subcooling", "compressor_current", "static_pressure",
+            }
+        ))
+        if pending and numeric_required and not has_result:
             unavailable = any(phrase in payload.message.lower() for phrase in ("cannot measure", "unable to measure", "not available"))
             acknowledged = payload.message.strip().lower().rstrip(".!?") in {"done", "i have done", "completed", "i did it", "sure"}
             if acknowledged:
@@ -1218,13 +1347,18 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
                 "pending_action": None,
             }
         else:
-            if pending and has_result:
+            if pending:
                 tool_executor.execute(
                     db=db,
                     agent_run_id=run_id,
                     tool_name="record_measurement",
                     arguments={"request_id": pending.id, "value": payload.message, "unit": pending.unit, "recorded_by": "Technician"},
                 )
+                record_measurement(state, pending.measurement_type, payload.message, pending.unit)
+                state["next_action"] = None
+                run = db.get(AgentRun, run_id)
+                run.state_json = json.dumps(state, sort_keys=True)
+                db.commit()
             result = agent_orchestrator.run(db, run_id, operator_message=payload.message)
         db.add(AgentMessage(agent_run_id=run_id, role="assistant", content=_agent_result_message(result)))
         db.commit()
