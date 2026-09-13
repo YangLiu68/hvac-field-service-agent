@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.agent.tool_executor import ApprovalRequired, ToolExecutionError, ToolExecutor
 from app.agent.tool_registry import ToolRegistry
 from app.agent.skills.registry import SkillRegistry
-from app.models import AgentRun, DiagnosticHypothesis, DiagnosticRun, JobEvent, MeasurementRequest, utcnow
+from app.models import AgentRun, DiagnosticHypothesis, DiagnosticRun, JobEvent, MeasurementRequest, MeasurementResult, utcnow
 
 
 class AgentOrchestrationError(RuntimeError):
@@ -264,10 +264,42 @@ class AgentOrchestrator:
                     "unit": pending.unit,
                     "safety_note": pending.safety_note,
                 }
+            # Provider tool calls are mandatory, but some compatible models
+            # still return prose. Before falling back to a hypothesis, run the
+            # read-only evidence tools deterministically so recovery never
+            # skips history or document retrieval.
+            allowed = set(self.skill_registry.get(skill_name).allowed_tools)
+            retrieval_calls = [
+                ("get_job_context", {}),
+                ("get_equipment_profile", {}),
+                ("search_verified_repairs", {"query": f"{run.job.error_code or ''} {run.job.technician_notes}", "limit": 5}),
+                ("search_error_codes", {"error_code": run.job.error_code, "top_k": 5}) if run.job.error_code else None,
+                ("search_service_manuals", {"query": f"{run.job.equipment_model} {run.job.error_code or ''} no cooling troubleshooting", "top_k": 5}),
+            ]
+            for item in retrieval_calls:
+                if item is None:
+                    continue
+                tool_name, arguments = item
+                if tool_name not in allowed:
+                    continue
+                try:
+                    self.tool_executor.execute(db=db, agent_run_id=run.id, tool_name=tool_name, arguments=arguments)
+                except ToolExecutionError:
+                    # Retrieval failure is recorded by the executor; keep the
+                    # recovery path alive so the technician still gets a safe
+                    # actionable measurement request.
+                    db.rollback()
             existing_hypothesis = db.query(DiagnosticHypothesis).filter(
                 DiagnosticHypothesis.diagnostic_run_id == run.diagnostic_run_id,
             ).order_by(DiagnosticHypothesis.rank.asc()).first()
             if existing_hypothesis:
+                measurement_results = db.query(MeasurementResult).join(MeasurementRequest).filter(
+                    MeasurementRequest.agent_run_id == run.id,
+                    MeasurementRequest.status == "completed",
+                ).all()
+                recommendation = existing_hypothesis.next_test or "Review the recorded measurements against the manufacturer procedure."
+                if measurement_results:
+                    recommendation = "Compare the recorded pressure, superheat, subcooling, and compressor-current values with the model specifications; inspect for leaks before any refrigerant adjustment or component replacement."
                 self.tool_executor.execute(
                     db=db,
                     agent_run_id=run.id,
@@ -275,7 +307,7 @@ class AgentOrchestrator:
                     arguments={
                         "likely_cause": existing_hypothesis.cause,
                         "confidence": min(existing_hypothesis.confidence or 0.35, 0.65),
-                        "recommendation": existing_hypothesis.next_test or "Review the recorded measurements against the manufacturer procedure.",
+                        "recommendation": recommendation,
                     },
                 )
                 return {"status": "completed"}
