@@ -1177,11 +1177,18 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
         has_result = bool(re.search(r"\d", payload.message))
         if pending and not has_result:
             unavailable = any(phrase in payload.message.lower() for phrase in ("cannot measure", "unable to measure", "not available"))
+            acknowledged = payload.message.strip().lower().rstrip(".!?") in {"done", "i have done", "completed", "i did it", "sure"}
+            if acknowledged:
+                followup = f"Thanks — I recorded that you completed the check. Please enter the actual {pending.measurement_type.replace('_', ' ')} readings so I can evaluate them and continue the diagnosis."
+            elif unavailable:
+                followup = "I cannot finalize the fault location without that measurement. Leave this run waiting and have a qualified technician provide the value, or start a new run after the measurement is available."
+            else:
+                followup = None
             result = {
                 "run_id": run.id,
                 "status": "waiting_for_technician",
                 "current_step": run.current_step,
-                "message": "I cannot finalize the fault location without that measurement. Leave this run waiting and have a qualified technician provide the value, or start a new run after the measurement is available." if unavailable else None,
+                "message": followup,
                 "pending_action": {
                     "request_id": pending.id,
                     "status": pending.status,
