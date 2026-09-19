@@ -8,6 +8,7 @@ from app.main import (
     _message_channel,
     _is_valid_pending_observation,
     _is_low_information_message,
+    _casual_reply,
 )
 
 
@@ -47,3 +48,5 @@ def test_meta_message_does_not_look_like_field_evidence():
     assert _looks_like_field_observation("do not have any questions") is False
     assert _message_channel("?") == "chat"
     assert _is_low_information_message("nothing") is True
+    assert _casual_reply("what is h v a c") is not None
+    assert _message_channel("shut it") == "chat"

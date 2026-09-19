@@ -1277,15 +1277,18 @@ def _is_low_information_message(message: str) -> bool:
     return normalized in {
         "nothing", "nothing else", "nothing new", "no new information", "nope",
         "not really", "idk", "i don't know", "i do not know", "okay", "ok",
+        "yes", "no", "shut it", "stop", "never mind", "nevermind", "cancel",
+        "not now", "leave it",
     }
 
 
 def _casual_reply(message: str) -> str | None:
     """Short, professional replies for common non-workflow conversation."""
     normalized = re.sub(r"\s+", " ", message.strip().lower()).rstrip(".!?。！？")
+    compact = re.sub(r"[^a-z0-9]", "", normalized)
     if _is_greeting_message(normalized):
         return "Hi — I’m your HVAC field assistant. Tell me what you’re seeing, share a measurement, or ask a question and I’ll help."
-    if normalized in {"what is hvac", "what's hvac", "what does hvac mean", "hvac是什么", "什么是hvac"}:
+    if normalized in {"what is hvac", "what's hvac", "what does hvac mean", "hvac是什么", "什么是hvac"} or compact in {"whatishvac", "whatshvac", "whatdoeshvacmean"}:
         return "HVAC means heating, ventilation, and air conditioning—the systems that control indoor temperature, airflow, and air quality."
     if normalized in {"what can you do", "what is your role", "what are your responsibilities", "what is your duty", "你的职责是什么", "你能做什么"}:
         return "I help technicians interpret symptoms and measurements, search approved service information, keep the work order current, and recommend the safest next diagnostic decision. I do not replace a qualified technician for hazardous electrical or refrigerant work."
