@@ -108,7 +108,7 @@ from app.agent import ApprovalRequired, ToolExecutionError, ToolExecutor, build_
 from app.agent.skills import SkillRouter, build_default_skill_registry
 from app.agent.orchestrator import AgentOrchestrator, AgentOrchestrationError
 from app.agent.planner import new_state, update_from_text, record_measurement
-from app.services.ai_service import AIServiceError, analyze_job, answer_field_question
+from app.services.ai_service import AIServiceError, analyze_job, answer_field_question, classify_message_intent
 from app.services.rag_service import ManualIndexError, hybrid_search, ingest_manuals
 from app.services.case_memory import evaluation_metrics, evaluate_closed_outcome, index_verified_outcome, search_case_memories
 from app.services.unified_assistant import run_unified_turn
@@ -1272,6 +1272,14 @@ def _message_channel(message: str, *, pending: MeasurementRequest | None = None)
     return "guided" if _looks_like_field_observation(message) else "chat"
 
 
+def _is_low_information_message(message: str) -> bool:
+    normalized = re.sub(r"\s+", " ", message.strip().lower()).rstrip(".!?。！？")
+    return normalized in {
+        "nothing", "nothing else", "nothing new", "no new information", "nope",
+        "not really", "idk", "i don't know", "i do not know", "okay", "ok",
+    }
+
+
 def _casual_reply(message: str) -> str | None:
     """Short, professional replies for common non-workflow conversation."""
     normalized = re.sub(r"\s+", " ", message.strip().lower()).rstrip(".!?。！？")
@@ -1356,11 +1364,16 @@ def chat_with_assistant(run_id: int, payload: AgentMessageCreate, db: Session = 
         MeasurementRequest.status == "pending",
     ).order_by(MeasurementRequest.id.desc()).first()
     casual_reply = _casual_reply(payload.message)
-    if casual_reply or _is_meta_message(payload.message) or run.status == "waiting_for_approval":
+    if casual_reply or _is_meta_message(payload.message) or _is_low_information_message(payload.message) or run.status == "waiting_for_approval":
         if run.status == "waiting_for_approval":
             reply = "This diagnostic run is paused for qualified-technician approval before the protected measurement. No new observation was recorded."
         elif casual_reply:
             reply = casual_reply
+        elif _is_low_information_message(payload.message):
+            if pending:
+                reply = f"No problem. I have not recorded a new field result. The open check is {pending.measurement_type.replace('_', ' ')}; report what you observe when ready, or ask why it matters."
+            else:
+                reply = "No problem. I have not changed the work order. Tell me what you observe or ask a specific HVAC question whenever you are ready."
         elif pending:
             reply = f"The current open check is {pending.measurement_type.replace('_', ' ')}. I need the field result before choosing the next step; ask a specific question if you want to know why this check matters."
         else:
@@ -1407,7 +1420,26 @@ def route_agent_turn(run_id: int, payload: AgentMessageCreate, db: Session = Dep
         MeasurementRequest.agent_run_id == run_id,
         MeasurementRequest.status == "pending",
     ).order_by(MeasurementRequest.id.desc()).first()
-    channel = _message_channel(payload.message, pending=pending)
+    intent = None
+    normalized = payload.message.strip().lower().rstrip(".!?")
+    if not _is_greeting_message(payload.message) and not _is_meta_message(payload.message) and not _casual_reply(payload.message):
+        # The model judges the current turn using only the current message and
+        # the open check. A failed/uncertain classification falls back to the
+        # conservative local evidence gate; old work-order notes never decide
+        # the channel on their own.
+        if not (pending and normalized in {"yes", "no", "done", "sure", "confirmed", "completed"}):
+            intent = classify_message_intent(
+                payload.message,
+                pending_measurement=pending.measurement_type if pending else None,
+                usage_callback=lambda usage: db.add(JobEvent(
+                    job_id=run.job_id,
+                    event_type="assistant_intent_usage",
+                    event_data=json.dumps({"agent_run_id": run_id, **usage}),
+                )),
+            )
+    channel = "guided" if intent == "field_observation" else (
+        _message_channel(payload.message, pending=pending) if intent in {None, "unknown"} else "chat"
+    )
     if channel == "guided":
         result = send_guided_agent_message(run_id, payload, db)
         body = result.model_dump() if hasattr(result, "model_dump") else result

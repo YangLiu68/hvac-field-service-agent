@@ -2,7 +2,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from app.schemas import DiagnosticContent
-from app.services.ai_service import analyze_job, answer_field_question
+from app.services.ai_service import analyze_job, answer_field_question, classify_message_intent
 
 
 def test_analyze_job_attaches_retrieved_sources():
@@ -69,3 +69,17 @@ def test_field_chat_uses_manual_evidence_and_returns_natural_reply():
     assert reply == "Check the filter first. [1]"
     request = client.chat.completions.create.call_args.kwargs
     assert "carrier-manual.pdf" in request["messages"][-1]["content"]
+
+
+def test_intent_classifier_uses_latest_message_and_fails_closed():
+    client = Mock()
+    client.chat.completions.create.return_value = SimpleNamespace(
+        choices=[SimpleNamespace(message=SimpleNamespace(content="conversation"))]
+    )
+    assert classify_message_intent("nothing", pending_measurement="evaporator_ice", client=client) == "conversation"
+    prompt = client.chat.completions.create.call_args.kwargs["messages"][-1]["content"]
+    assert "Latest message: nothing" in prompt
+    assert "E102" not in prompt
+
+    client.chat.completions.create.side_effect = RuntimeError("provider unavailable")
+    assert classify_message_intent("The filter is clean", client=client) == "unknown"

@@ -15,6 +15,64 @@ class AIServiceError(RuntimeError):
     """Raised when diagnosis cannot be completed safely."""
 
 
+def classify_message_intent(
+    message: str,
+    *,
+    pending_measurement: str | None = None,
+    client: OpenAI | None = None,
+    usage_callback: Callable[[dict], None] | None = None,
+) -> str:
+    """Classify the current turn without letting old work-order facts leak in.
+
+    The classifier is deliberately a small, conservative gate.  It never
+    diagnoses the equipment and it must choose ``conversation`` whenever the
+    message is social, ambiguous, or does not contain a new field observation.
+    """
+    if not message.strip():
+        return "conversation"
+    prompt = (
+        "Classify ONLY the technician's latest message. Return exactly one label: "
+        "field_observation, conversation, or low_information.\n"
+        "field_observation = the message reports a concrete equipment symptom, "
+        "measurement, error code, inspection result, or explicitly says a requested "
+        "field check could/could not be completed.\n"
+        "conversation = a question, greeting, explanation request, instruction request, "
+        "or anything that does not report new field evidence.\n"
+        "low_information = hello/thanks/okay/nothing/no new information or a similarly "
+        "non-substantive reply. Never infer facts from the work order or previous turns.\n"
+        f"Open check, if any: {pending_measurement or 'none'}\n"
+        f"Latest message: {message.strip()}"
+    )
+    try:
+        response = (client or _get_client()).chat.completions.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
+            messages=[
+                {"role": "system", "content": "You are a conservative message-intent router. Output one label only."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0,
+            max_tokens=12,
+        )
+        if usage_callback is not None:
+            usage = getattr(response, "usage", None)
+            usage_callback({
+                "provider": "openrouter" if "openrouter.ai" in os.getenv("OPENAI_BASE_URL", "").lower() or os.getenv("OPENROUTER_API_KEY") else "openai-compatible",
+                "model": os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
+                "input_tokens": getattr(usage, "prompt_tokens", 0) or 0,
+                "output_tokens": getattr(usage, "completion_tokens", 0) or 0,
+            })
+        label = (response.choices[0].message.content if response.choices else "").strip().lower()
+        if "field_observation" in label:
+            return "field_observation"
+        if "low_information" in label:
+            return "low_information"
+        return "conversation"
+    except Exception:
+        # An unavailable classifier returns unknown so an explicit local field
+        # signal can still advance safely; ambiguous text remains chat.
+        return "unknown"
+
+
 def _get_client() -> OpenAI:
     api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
     if not api_key:
