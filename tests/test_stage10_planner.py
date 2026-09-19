@@ -9,6 +9,7 @@ from app.main import (
     _is_valid_pending_observation,
     _is_low_information_message,
     _casual_reply,
+    _approval_chat_reply,
 )
 
 
@@ -50,3 +51,15 @@ def test_meta_message_does_not_look_like_field_evidence():
     assert _is_low_information_message("nothing") is True
     assert _casual_reply("what is h v a c") is not None
     assert _message_channel("shut it") == "chat"
+
+
+def test_negative_evidence_is_not_inverted():
+    state = new_state("no_cooling")
+    update_from_text(state, "There is no ice on the evaporator coil.")
+    assert state["checks"]["evaporator_ice"]["status"] == "negative"
+
+
+def test_approval_chat_explains_next_step():
+    reply = _approval_chat_reply("what should i do")
+    assert "qualified technician" in reply
+    assert "approval" in reply

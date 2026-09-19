@@ -102,7 +102,11 @@ class AgentOrchestrator:
             f"Completion criteria: {', '.join(skill.completion_criteria)}\n"
             f"Escalate when: {', '.join(skill.escalation_conditions)}\n"
             f"Durable diagnostic state: {state_summary(state)}\n"
-            "Choose the next action from the pending checks in order. Ask for one field observation at a time; never bundle unrelated measurements."
+            "Treat the durable state as an evidence ledger, not a script. Skip every check already supported by "
+            "the technician's observations or recorded measurements, incorporate new evidence even when it arrives "
+            "out of order, and choose the single highest-information safe next action for the leading hypothesis. "
+            "Do not restart a workflow or repeat a completed check. Ask for one focused field observation at a time; "
+            "never bundle unrelated measurements."
         )
 
     def _tools_for(self, run: AgentRun) -> list[dict]:

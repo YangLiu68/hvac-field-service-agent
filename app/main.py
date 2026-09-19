@@ -1196,6 +1196,10 @@ def _agent_result_message(result: dict) -> str:
     if result.get("message"):
         return str(result["message"])
     pending = result.get("pending_action") or {}
+    if pending.get("status") == "waiting_for_approval":
+        return "The next diagnostic measurement is protected. A qualified technician or supervisor must approve it before refrigerant or energized electrical work proceeds."
+    if pending.get("approval_id"):
+        return "The next diagnostic measurement is protected. A qualified technician or supervisor must approve it before refrigerant or energized electrical work proceeds."
     if pending.get("status") == "pending":
         measurement = pending.get("measurement_type", "the requested field measurement")
         instructions = pending.get("instructions") or "Follow the approved procedure and report the observed value."
@@ -1297,6 +1301,22 @@ def _casual_reply(message: str) -> str | None:
     return None
 
 
+def _approval_chat_reply(message: str) -> str:
+    normalized = re.sub(r"\s+", " ", message.strip().lower()).rstrip(".!?。！？")
+    if any(term in normalized for term in ("what should i do", "next step", "how to proceed", "怎么办", "下一步")):
+        return (
+            "The diagnostic is paused because the next requested measurement involves refrigerant or energized electrical work. "
+            "A qualified technician or supervisor should approve it first. After approval, record the suction/liquid pressures, "
+            "superheat, subcooling, and compressor current; if no qualified person is available, stop here and escalate."
+        )
+    if any(term in normalized for term in ("why", "what does approval", "什么意思")):
+        return (
+            "Approval is required to prevent an unqualified person from opening an energized compartment or handling refrigerant. "
+            "The case and prior safe checks remain saved while the protected step is reviewed."
+        )
+    return "The diagnostic is paused for qualified-technician approval before the protected measurement. You may ask about the reason or next step without changing the work order."
+
+
 def _is_valid_pending_observation(message: str, pending: MeasurementRequest) -> bool:
     """Reject chat/meta text so it cannot be saved as a field observation."""
     if _is_meta_message(message):
@@ -1369,7 +1389,7 @@ def chat_with_assistant(run_id: int, payload: AgentMessageCreate, db: Session = 
     casual_reply = _casual_reply(payload.message)
     if casual_reply or _is_meta_message(payload.message) or _is_low_information_message(payload.message) or run.status == "waiting_for_approval":
         if run.status == "waiting_for_approval":
-            reply = "This diagnostic run is paused for qualified-technician approval before the protected measurement. No new observation was recorded."
+            reply = _approval_chat_reply(payload.message)
         elif casual_reply:
             reply = casual_reply
         elif _is_low_information_message(payload.message):
@@ -1502,6 +1522,10 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
             state = json.loads(run.state_json or "{}")
         except json.JSONDecodeError:
             state = new_state(run.skill_name or "general_hvac_triage")
+        before_checks = {
+            name: item.get("status", "unknown")
+            for name, item in state.get("checks", {}).items()
+        }
         update_from_text(state, payload.message)
         run.state_json = json.dumps(state, sort_keys=True)
         db.commit()
@@ -1515,9 +1539,29 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
         # workflow or create a duplicate request.
         valid_observation = bool(pending and _is_valid_pending_observation(payload.message, pending))
         if pending and not valid_observation:
+            newly_recorded = [
+                name for name, item in state.get("checks", {}).items()
+                if item.get("status", "unknown") != "unknown"
+                and before_checks.get(name, "unknown") == "unknown"
+            ]
             unavailable = any(phrase in payload.message.lower() for phrase in ("cannot measure", "unable to measure", "not available"))
             acknowledged = payload.message.strip().lower().rstrip(".!?") in {"done", "i have done", "completed", "i did it", "sure"}
-            if acknowledged:
+            labels = {
+                "thermostat_call": "thermostat call",
+                "indoor_blower": "indoor blower",
+                "outdoor_unit_operation": "outdoor unit operation",
+                "filter_airflow": "filter/airflow condition",
+                "supply_return_temperature": "supply/return temperatures",
+                "evaporator_ice": "evaporator icing",
+            }
+            if newly_recorded and pending.measurement_type not in newly_recorded:
+                recorded = ", ".join(labels.get(name, name.replace("_", " ")) for name in newly_recorded)
+                followup = (
+                    f"Recorded additional field evidence for {recorded}. I did not reset the diagnosis. "
+                    f"The still-open check is {pending.measurement_type.replace('_', ' ')}; report that result "
+                    "when available, or ask why it is relevant."
+                )
+            elif acknowledged:
                 followup = f"Thanks — I recorded that you completed the check. Please enter the actual {pending.measurement_type.replace('_', ' ')} readings so I can evaluate them and continue the diagnosis."
             elif unavailable:
                 followup = "I cannot finalize the fault location without that measurement. Leave this run waiting and have a qualified technician provide the value, or start a new run after the measurement is available."

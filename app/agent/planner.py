@@ -78,10 +78,10 @@ def update_from_text(state: dict[str, Any], text: str) -> dict[str, Any]:
         return state
     state.setdefault("observations", []).append(raw[:1000])
 
-    if re.search(r"thermostat.*(call|calling|cooling)|calling.*cool", lower):
-        _set_check(state, "thermostat_call", "confirmed", raw)
-    elif re.search(r"thermostat.*(not|no).*(call|cool)|not calling for cool", lower):
+    if re.search(r"thermostat.*(not|no).*(call|cool)|not calling for cool", lower):
         _set_check(state, "thermostat_call", "negative", raw)
+    elif re.search(r"thermostat.*(call|calling|cooling)|calling.*cool", lower):
+        _set_check(state, "thermostat_call", "confirmed", raw)
 
     if re.search(r"(indoor|blower|air handler).*\b(run|running|on)\b|\bblower\s+is\s+running", lower):
         _set_check(state, "indoor_blower", "confirmed", raw)
@@ -106,10 +106,10 @@ def update_from_text(state: dict[str, Any], text: str) -> dict[str, Any]:
         state["temperature"] = {"supply": supply.group(1), "return": ret.group(1), "unit": "F"}
         _set_check(state, "supply_return_temperature", "confirmed", raw)
 
-    if re.search(r"(evaporator|coil).*(frozen|ice|icing)|ice.*(evaporator|coil)", lower):
-        _set_check(state, "evaporator_ice", "confirmed", raw)
-    elif re.search(r"(evaporator|coil).*(not frozen|no ice|clear)", lower):
+    if re.search(r"(evaporator|coil).*(not frozen|no ice|clear)|no ice.*(evaporator|coil)", lower):
         _set_check(state, "evaporator_ice", "negative", raw)
+    elif re.search(r"(evaporator|coil).*(frozen|ice|icing)|ice.*(evaporator|coil)", lower):
+        _set_check(state, "evaporator_ice", "confirmed", raw)
 
     return state
 
