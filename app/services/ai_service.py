@@ -166,7 +166,8 @@ def answer_field_question(
                 "If evidence is missing, label the conclusion preliminary and give the single most useful safe "
                 "next action. Never authorize hazardous electrical or refrigerant work; recommend qualified "
                 "escalation instead. Do not call tools and do not claim that a diagnosis is complete. Use at "
-                "most three short paragraphs and avoid headings or long checklists."
+                "most three short paragraphs, under 160 words, and avoid headings or long checklists. "
+                "Finish the answer cleanly; do not trail off or repeat the work-order context."
             ),
         },
         *conversation,
@@ -187,7 +188,7 @@ def answer_field_question(
             model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
             messages=messages,
             temperature=0.2,
-            max_tokens=450,
+            max_tokens=350,
         )
     except Exception as exc:
         raise AIServiceError(f"The assistant chat request failed: {exc}") from exc

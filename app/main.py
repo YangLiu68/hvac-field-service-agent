@@ -1222,6 +1222,70 @@ def _is_meta_message(message: str) -> bool:
     }
 
 
+def _is_greeting_message(message: str) -> bool:
+    """Recognize social openers without sending them through diagnosis."""
+    normalized = re.sub(r"\s+", " ", message.strip().lower()).rstrip(".!?。！？")
+    return normalized in {
+        "hi", "hello", "hey", "早", "早上好", "早安", "你好", "您好",
+        "good morning", "good afternoon", "good evening", "thanks", "thank you",
+    }
+
+
+def _looks_like_field_observation(message: str) -> bool:
+    """Return true only for language that describes an equipment condition.
+
+    This is a routing guard, not a diagnosis.  Questions such as ``what is
+    HVAC`` and ``what can you do`` deliberately stay in the chat channel.
+    Concrete state, measurements, error codes, and explicit logging language
+    are the signals that should enter the audited work-order workflow.
+    """
+    normalized = re.sub(r"\s+", " ", message.strip().lower())
+    if not normalized or _is_greeting_message(normalized) or _is_meta_message(normalized):
+        return False
+    if re.search(r"\b(?:what|why|how|who|can you|could you|should i)\b", normalized) and not re.search(
+        r"\b(?:is|are|was|were|measured|observed|confirmed|showing|reading|reads|set to)\b", normalized
+    ):
+        return False
+    if re.search(r"\b(?:error\s*code|e\d{2,4})\b", normalized):
+        return True
+    if re.search(r"\b(?:\d+(?:\.\d+)?\s*(?:°|degrees)?\s*[fc]|\d+(?:\.\d+)?\s*(?:psi|amps?|a|pa))\b", normalized):
+        return True
+    return bool(re.search(
+        r"\b(?:system|unit|ac|air conditioner|thermostat|filter|airflow|air flow|indoor fan|blower|outdoor fan|outdoor unit|compressor|coil|suction line|refrigerant)\s+(?:is|was|shows?|showing|running|stopped|not|doesn't|does not|looks|appears|measured|reads|set)",
+        normalized,
+    ) or re.search(
+        r"\b(?:blowing warm air|not cooling|no cooling|calling for cooling|filter is|airflow is|compressor is|fan is|coil is|visually checked|record this|log this|observed|confirmed)\b",
+        normalized,
+    ))
+
+
+def _message_channel(message: str, *, pending: MeasurementRequest | None = None) -> str:
+    """Choose between ordinary conversation and audited field workflow."""
+    if _is_greeting_message(message) or _is_meta_message(message):
+        return "chat"
+    normalized = message.strip().lower()
+    # A bare yes/no is meaningful only when the workflow has an open check.
+    if pending and normalized.rstrip(".!?") in {"yes", "no", "done", "sure", "confirmed", "completed"}:
+        return "guided"
+    if pending and any(phrase in normalized for phrase in ("cannot measure", "unable to measure", "not available")):
+        return "guided"
+    return "guided" if _looks_like_field_observation(message) else "chat"
+
+
+def _casual_reply(message: str) -> str | None:
+    """Short, professional replies for common non-workflow conversation."""
+    normalized = re.sub(r"\s+", " ", message.strip().lower()).rstrip(".!?。！？")
+    if _is_greeting_message(normalized):
+        return "Hi — I’m your HVAC field assistant. Tell me what you’re seeing, share a measurement, or ask a question and I’ll help."
+    if normalized in {"what is hvac", "what's hvac", "what does hvac mean", "hvac是什么", "什么是hvac"}:
+        return "HVAC means heating, ventilation, and air conditioning—the systems that control indoor temperature, airflow, and air quality."
+    if normalized in {"what can you do", "what is your role", "what are your responsibilities", "what is your duty", "你的职责是什么", "你能做什么"}:
+        return "I help technicians interpret symptoms and measurements, search approved service information, keep the work order current, and recommend the safest next diagnostic decision. I do not replace a qualified technician for hazardous electrical or refrigerant work."
+    if normalized in {"thanks", "thank you", "谢谢"}:
+        return "You’re welcome. Send the next observation or question whenever you’re ready."
+    return None
+
+
 def _is_valid_pending_observation(message: str, pending: MeasurementRequest) -> bool:
     """Reject chat/meta text so it cannot be saved as a field observation."""
     if _is_meta_message(message):
@@ -1291,9 +1355,12 @@ def chat_with_assistant(run_id: int, payload: AgentMessageCreate, db: Session = 
         MeasurementRequest.agent_run_id == run_id,
         MeasurementRequest.status == "pending",
     ).order_by(MeasurementRequest.id.desc()).first()
-    if _is_meta_message(payload.message) or run.status == "waiting_for_approval":
+    casual_reply = _casual_reply(payload.message)
+    if casual_reply or _is_meta_message(payload.message) or run.status == "waiting_for_approval":
         if run.status == "waiting_for_approval":
             reply = "This diagnostic run is paused for qualified-technician approval before the protected measurement. No new observation was recorded."
+        elif casual_reply:
+            reply = casual_reply
         elif pending:
             reply = f"The current open check is {pending.measurement_type.replace('_', ' ')}. I need the field result before choosing the next step; ask a specific question if you want to know why this check matters."
         else:
@@ -1325,6 +1392,46 @@ def chat_with_assistant(run_id: int, payload: AgentMessageCreate, db: Session = 
         return assistant_message
     except AIServiceError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.post("/agent-runs/{run_id}/turn")
+def route_agent_turn(run_id: int, payload: AgentMessageCreate, db: Session = Depends(get_db)):
+    """Route one technician turn to chat or the audited diagnostic workflow.
+
+    The browser must not infer workflow intent from punctuation.  This server
+    route is the single boundary: ordinary conversation stays conversational;
+    concrete field evidence is persisted and advances the graph.
+    """
+    run = get_agent_run_or_404(db, run_id)
+    pending = db.query(MeasurementRequest).filter(
+        MeasurementRequest.agent_run_id == run_id,
+        MeasurementRequest.status == "pending",
+    ).order_by(MeasurementRequest.id.desc()).first()
+    channel = _message_channel(payload.message, pending=pending)
+    if channel == "guided":
+        result = send_guided_agent_message(run_id, payload, db)
+        body = result.model_dump() if hasattr(result, "model_dump") else result
+        return {"channel": "guided", **body}
+    result = chat_with_assistant(run_id, payload, db)
+    if hasattr(result, "model_dump"):
+        body = result.model_dump()
+    else:
+        body = {
+            "id": result.id,
+            "agent_run_id": result.agent_run_id,
+            "role": result.role,
+            "content": result.content,
+            "created_at": result.created_at,
+        }
+    return {
+        "channel": "chat",
+        "run_id": run_id,
+        "status": run.status,
+        "current_step": run.current_step,
+        "message": body.get("content", "") if isinstance(body, dict) else "",
+        "assistant_message": body,
+        "pending_action": None,
+    }
 
 
 @app.post("/agent-runs/{run_id}/guided-messages", response_model=AgentRunResult)
