@@ -1213,6 +1213,37 @@ def _agent_result_message(result: dict) -> str:
     return f"Agent status: {result.get('status', 'unknown')}"
 
 
+def _is_meta_message(message: str) -> bool:
+    normalized = re.sub(r"\s+", " ", message.strip().lower()).rstrip(".!?")
+    return normalized in {
+        "?", "why", "what now", "not sure", "i don't know", "i do not know",
+        "no questions", "do not have any questions", "i do not have any questions",
+        "i don't have any questions", "no idea",
+    }
+
+
+def _is_valid_pending_observation(message: str, pending: MeasurementRequest) -> bool:
+    """Reject chat/meta text so it cannot be saved as a field observation."""
+    if _is_meta_message(message):
+        return False
+    normalized = message.strip().lower()
+    has_number = bool(re.search(r"\d", normalized))
+    numeric_types = {
+        "refrigerant_circuit_measurements", "suction_pressure", "discharge_pressure",
+        "superheat", "subcooling", "compressor_current", "static_pressure",
+    }
+    if pending.unit or pending.measurement_type in numeric_types:
+        return has_number
+    keywords = {
+        "thermostat_call": ("thermostat", "cool", "call", "yes", "no"),
+        "indoor_blower": ("blower", "indoor fan", "air handler", "running", "off", "yes", "no"),
+        "outdoor_unit_operation": ("outdoor", "condenser", "compressor", "fan", "running", "off", "yes", "no"),
+        "filter_airflow": ("filter", "airflow", "air flow", "clean", "dirty", "restricted", "yes", "no"),
+        "evaporator_ice": ("ice", "icing", "frost", "frozen", "coil", "suction line", "clear", "yes", "no"),
+    }.get(pending.measurement_type, ())
+    return any(term in normalized for term in keywords)
+
+
 @app.post("/agent-runs/{run_id}/start", response_model=AgentRunResult)
 def start_agent_run(run_id: int, db: Session = Depends(get_db)):
     try:
@@ -1256,6 +1287,22 @@ def chat_with_assistant(run_id: int, payload: AgentMessageCreate, db: Session = 
     technician_message = AgentMessage(agent_run_id=run_id, role="technician", content=payload.message)
     db.add(technician_message)
     db.commit()
+    pending = db.query(MeasurementRequest).filter(
+        MeasurementRequest.agent_run_id == run_id,
+        MeasurementRequest.status == "pending",
+    ).order_by(MeasurementRequest.id.desc()).first()
+    if _is_meta_message(payload.message) or run.status == "waiting_for_approval":
+        if run.status == "waiting_for_approval":
+            reply = "This diagnostic run is paused for qualified-technician approval before the protected measurement. No new observation was recorded."
+        elif pending:
+            reply = f"The current open check is {pending.measurement_type.replace('_', ' ')}. I need the field result before choosing the next step; ask a specific question if you want to know why this check matters."
+        else:
+            reply = "Please describe the HVAC symptom or ask a specific diagnostic question so I can respond to what you actually observed."
+        assistant_message = AgentMessage(agent_run_id=run_id, role="assistant", content=reply)
+        db.add(assistant_message)
+        db.commit()
+        db.refresh(assistant_message)
+        return assistant_message
     try:
         reply = answer_field_question(
             payload.message,
@@ -1265,6 +1312,11 @@ def chat_with_assistant(run_id: int, payload: AgentMessageCreate, db: Session = 
             error_code=job.error_code,
             job_notes=job.technician_notes,
             history=history,
+            usage_callback=lambda usage: db.add(JobEvent(
+                job_id=job.id,
+                event_type="assistant_llm_usage",
+                event_data=json.dumps({"agent_run_id": run_id, **usage}),
+            )),
         )
         assistant_message = AgentMessage(agent_run_id=run_id, role="assistant", content=reply)
         db.add(assistant_message)
@@ -1293,6 +1345,17 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
             db.add(AgentMessage(agent_run_id=run_id, role="assistant", content=result["message"]))
             db.commit()
             return result
+        if run.status == "waiting_for_approval":
+            result = {
+                "run_id": run.id,
+                "status": run.status,
+                "current_step": run.current_step,
+                "message": "This diagnostic run is paused for qualified-technician approval before the next protected measurement. You can ask why, or wait for the approval decision.",
+                "pending_action": {"status": "waiting_for_approval"},
+            }
+            db.add(AgentMessage(agent_run_id=run_id, role="assistant", content=result["message"]))
+            db.commit()
+            return result
         try:
             state = json.loads(run.state_json or "{}")
         except json.JSONDecodeError:
@@ -1308,22 +1371,18 @@ def send_guided_agent_message(run_id: int, payload: AgentMessageCreate, db: Sess
         # value (or explicitly says it cannot be measured). A command such as
         # “measure suction pressure” is not a result and must not advance the
         # workflow or create a duplicate request.
-        has_result = bool(re.search(r"\d", payload.message))
-        numeric_required = bool(pending and (
-            pending.unit or pending.measurement_type in {
-                "refrigerant_circuit_measurements", "suction_pressure", "discharge_pressure",
-                "superheat", "subcooling", "compressor_current", "static_pressure",
-            }
-        ))
-        if pending and numeric_required and not has_result:
+        valid_observation = bool(pending and _is_valid_pending_observation(payload.message, pending))
+        if pending and not valid_observation:
             unavailable = any(phrase in payload.message.lower() for phrase in ("cannot measure", "unable to measure", "not available"))
             acknowledged = payload.message.strip().lower().rstrip(".!?") in {"done", "i have done", "completed", "i did it", "sure"}
             if acknowledged:
                 followup = f"Thanks — I recorded that you completed the check. Please enter the actual {pending.measurement_type.replace('_', ' ')} readings so I can evaluate them and continue the diagnosis."
             elif unavailable:
                 followup = "I cannot finalize the fault location without that measurement. Leave this run waiting and have a qualified technician provide the value, or start a new run after the measurement is available."
+            elif _is_meta_message(payload.message):
+                followup = f"I have not recorded a result yet. The open check is {pending.measurement_type.replace('_', ' ')}. Please report the field result, for example whether you see ice or no ice."
             else:
-                followup = None
+                followup = f"I need the result of the open check ({pending.measurement_type.replace('_', ' ')}). Please report what you observed; I will not treat this message as a measurement."
             result = {
                 "run_id": run.id,
                 "status": "waiting_for_technician",

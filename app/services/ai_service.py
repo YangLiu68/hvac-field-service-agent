@@ -1,4 +1,5 @@
 import os
+from typing import Callable
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -125,6 +126,7 @@ def answer_field_question(
     job_notes: str | None = None,
     history: list[dict[str, str]] | None = None,
     client: OpenAI | None = None,
+    usage_callback: Callable[[dict], None] | None = None,
 ) -> str:
     """Return a conversational, evidence-aware response for a technician.
 
@@ -193,4 +195,12 @@ def answer_field_question(
     content = response.choices[0].message.content if response.choices else None
     if not content or not content.strip():
         raise AIServiceError("The assistant returned an empty reply")
+    if usage_callback is not None:
+        usage = getattr(response, "usage", None)
+        usage_callback({
+            "provider": "openrouter" if "openrouter.ai" in os.getenv("OPENAI_BASE_URL", "").lower() or os.getenv("OPENROUTER_API_KEY") else "openai-compatible",
+            "model": os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
+            "input_tokens": getattr(usage, "prompt_tokens", 0) or 0,
+            "output_tokens": getattr(usage, "completion_tokens", 0) or 0,
+        })
     return content.strip()
